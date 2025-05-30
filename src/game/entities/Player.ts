@@ -1,8 +1,10 @@
-import type { GameObject, Position, Size } from '../../interfaces/gameInterfaces';
+import type { GameObject, Position, Size, PlayerStats, Item } from '../../interfaces/gameInterfaces';
 import type { Level } from '../levels/Level';
 import type { InputManager } from '../../core/InputManager';
 import { Sprite } from '../../rendering/sprites/Sprite';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
+import { Inventory } from '../systems/Inventory';
+import { ItemDatabase } from '../systems/ItemDatabase';
 
 interface Velocity {
   readonly x: number;
@@ -25,6 +27,8 @@ export class Player implements GameObject {
   private readonly friction: number;
   private level: Level | null;
   private inputManager: InputManager | null;
+  private stats: PlayerStats;
+  private readonly inventory: Inventory;
 
   public constructor(position: Position) {
     this.position = position;
@@ -37,6 +41,26 @@ export class Player implements GameObject {
     this.friction = GAME_CONSTANTS.PLAYER.FRICTION;
     this.level = null;
     this.inputManager = null;
+    
+    // Initialize player stats
+    this.stats = {
+      health: GAME_CONSTANTS.PLAYER.INITIAL_HEALTH,
+      maxHealth: GAME_CONSTANTS.PLAYER.INITIAL_HEALTH,
+      mana: 50,
+      maxMana: 50,
+      attack: 10,
+      defense: 5,
+      speed: GAME_CONSTANTS.PLAYER.SPEED,
+      level: 1,
+      experience: 0,
+      experienceToNext: 100
+    };
+
+    // Initialize inventory
+    this.inventory = new Inventory(GAME_CONSTANTS.INVENTORY.MAX_SLOTS);
+    
+    // Add starting equipment
+    this.giveStartingItems();
   }
 
   public setInputManager(inputManager: InputManager): void {
@@ -190,5 +214,123 @@ export class Player implements GameObject {
     });
 
     return sprite;
+  }
+
+  public getStats(): PlayerStats {
+    const equippedStats = this.inventory.getEquippedStats();
+    return {
+      ...this.stats,
+      attack: this.stats.attack + equippedStats.attack,
+      defense: this.stats.defense + equippedStats.defense,
+      speed: this.stats.speed + equippedStats.speed
+    };
+  }
+
+  public getInventory(): Inventory {
+    return this.inventory;
+  }
+
+  public addItem(item: Item, quantity: number = 1): boolean {
+    return this.inventory.addItem(item, quantity);
+  }
+
+  public removeItem(itemId: string, quantity: number = 1): boolean {
+    return this.inventory.removeItem(itemId, quantity);
+  }
+
+  public takeDamage(damage: number): boolean {
+    const actualDamage = Math.max(1, damage - this.getStats().defense);
+    this.stats.health = Math.max(0, this.stats.health - actualDamage);
+    return this.stats.health <= 0;
+  }
+
+  public heal(amount: number): void {
+    this.stats.health = Math.min(this.stats.maxHealth, this.stats.health + amount);
+  }
+
+  public restoreMana(amount: number): void {
+    this.stats.mana = Math.min(this.stats.maxMana, this.stats.mana + amount);
+  }
+
+  public gainExperience(amount: number): boolean {
+    this.stats.experience += amount;
+    
+    if (this.stats.experience >= this.stats.experienceToNext) {
+      return this.levelUp();
+    }
+    
+    return false;
+  }
+
+  private levelUp(): boolean {
+    this.stats.level++;
+    this.stats.experience -= this.stats.experienceToNext;
+    this.stats.experienceToNext = Math.floor(this.stats.experienceToNext * 1.5);
+    
+    // Increase stats on level up
+    this.stats.maxHealth += 10;
+    this.stats.health = this.stats.maxHealth; // Full heal on level up
+    this.stats.maxMana += 5;
+    this.stats.mana = this.stats.maxMana;
+    this.stats.attack += 2;
+    this.stats.defense += 1;
+    
+    return true;
+  }
+
+  private giveStartingItems(): void {
+    // Give some starting items
+    const rustySword = ItemDatabase.getItem('rusty_sword');
+    const healthPotion = ItemDatabase.getItem('health_potion');
+    const ironOre = ItemDatabase.getItem('iron_ore');
+    
+    if (rustySword) {
+      this.inventory.addItem(rustySword, 1);
+    }
+    
+    if (healthPotion) {
+      this.inventory.addItem(healthPotion, 3);
+    }
+    
+    if (ironOre) {
+      this.inventory.addItem(ironOre, 5);
+    }
+  }
+
+  public collectItem(item: Item, quantity: number = 1): boolean {
+    const success = this.addItem(item, quantity);
+    if (success) {
+      // Could trigger UI notification here
+      console.log(`Collected ${quantity}x ${item.name}`);
+    }
+    return success;
+  }
+
+  public serialize(): string {
+    return JSON.stringify({
+      position: this.position,
+      stats: this.stats,
+      inventory: this.inventory.serialize()
+    });
+  }
+
+  public deserialize(data: string): void {
+    try {
+      const parsed = JSON.parse(data);
+      
+      if (parsed.position) {
+        this.position = parsed.position;
+      }
+      
+      if (parsed.stats) {
+        this.stats = parsed.stats;
+      }
+      
+      if (parsed.inventory) {
+        this.inventory.deserialize(parsed.inventory);
+      }
+    } catch (error) {
+      console.error('Failed to deserialize player:', error);
+    }
   }
 }

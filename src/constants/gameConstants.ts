@@ -32,4 +32,21 @@ export const GAME_CONSTANTS = {
       MAX_ROOM_COUNT: 8,
     },
   },
+  INVENTORY: {
+    MAX_SLOTS: 30,
+    HOTBAR_SLOTS: 10,
+  },
+  ITEMS: {
+    COLORS: {
+      COMMON: '#FFFFFF',
+      UNCOMMON: '#00FF00',
+      RARE: '#0080FF',
+      EPIC: '#8000FF',
+      LEGENDARY: '#FF8000',
+      BACKGROUND: '#2D2D2D',
+      BORDER: '#555555',
+      SELECTED: '#FFFF00',
+    },
+    DROP_CHANCE: 0.3, // 30% chance for monsters to drop items
+  },
 } as const;

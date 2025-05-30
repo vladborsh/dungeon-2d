@@ -2,23 +2,148 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Dungeon 2D</title>
+    <title>Dungeon 2D - Inventory System Demo</title>
     <style>
       body {
         margin: 0;
-        padding: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: #000;
+        color: #fff;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
         min-height: 100vh;
+      }
+      
+      .game-wrapper {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      
+      #game-container {
+        position: relative;
+      }
+      
+      canvas {
+        border: 2px solid #333;
         background-color: #000;
       }
-      canvas {
-        border: 1px solid #333;
+      
+      .controls {
+        background-color: #222;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 300px;
+        border: 1px solid #444;
+      }
+      
+      .controls h3 {
+        margin-top: 0;
+        color: #00FF00;
+        border-bottom: 1px solid #444;
+        padding-bottom: 10px;
+      }
+      
+      .control-group {
+        margin-bottom: 15px;
+      }
+      
+      .control-group strong {
+        color: #FFD700;
+        display: block;
+        margin-bottom: 5px;
+      }
+      
+      .key {
+        background-color: #444;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-weight: bold;
+      }
+      
+      .feature {
+        background-color: #1a1a1a;
+        padding: 10px;
+        margin: 10px 0;
+        border-left: 3px solid #00FF00;
+        border-radius: 3px;
+      }
+      
+      .feature h4 {
+        margin: 0 0 8px 0;
+        color: #00FF00;
+      }
+      
+      .feature p {
+        margin: 0;
+        font-size: 14px;
+        color: #ccc;
       }
     </style>
   </head>
   <body>
-    <div id="game-container"></div>
+    <h1>🏰 Dungeon 2D - Inventory & Arsenal System</h1>
+    
+    <div class="game-wrapper">
+      <div id="game-container"></div>
+      
+      <div class="controls">
+        <h3>🎮 Controls</h3>
+        
+        <div class="control-group">
+          <strong>Movement:</strong>
+          <span class="key">WASD</span> or <span class="key">Arrow Keys</span>
+        </div>
+        
+        <div class="control-group">
+          <strong>Inventory:</strong>
+          <span class="key">I</span> - Toggle inventory panel
+        </div>
+        
+        <div class="control-group">
+          <strong>Item Collection:</strong>
+          <span class="key">E</span> - Collect nearby items<br>
+          <small>Items are auto-collected when walking over them</small>
+        </div>
+        
+        <div class="control-group">
+          <strong>Hotbar:</strong>
+          <span class="key">1-9, 0</span> - Select hotbar slots
+        </div>
+        
+        <div class="control-group">
+          <strong>Equipment:</strong>
+          Click on weapons/armor in inventory to equip
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; gap: 20px; margin-top: 20px; max-width: 1200px;">
+      <div class="feature">
+        <h4>📦 Inventory System</h4>
+        <p>30-slot inventory with stackable items, equipment slots, and item tooltips. Items are color-coded by rarity.</p>
+      </div>
+      
+      <div class="feature">
+        <h4>⚔️ Equipment & Arsenal</h4>
+        <p>Equip weapons and armor to boost your stats. Equipment affects attack, defense, and special abilities.</p>
+      </div>
+      
+      <div class="feature">
+        <h4>🎒 Resource Collection</h4>
+        <p>Collect ores, herbs, gems, and essences. Use them for crafting and trading in the dungeon.</p>
+      </div>
+      
+      <div class="feature">
+        <h4>💎 Loot System</h4>
+        <p>Procedurally generated loot with different rarity levels. Find legendary artifacts and powerful gear!</p>
+      </div>
+    </div>
+    
+    <script src="main.js"></script>
   </body>
 </html>
