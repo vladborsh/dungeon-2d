@@ -158,10 +158,8 @@ export class EventHandler {
       return true;
     }
     
-    // Check inventory UI click
-    if (this.inventoryUI.handleClick(mouseX, mouseY)) {
-      return true;
-    }
+    // Note: Inventory UI now handles its own HTML-based clicks,
+    // no need to handle canvas-based inventory clicks here
     
     return false;
   }

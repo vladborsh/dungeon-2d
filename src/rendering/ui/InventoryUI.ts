@@ -3,8 +3,7 @@ import type { Inventory } from '../../game/systems/Inventory';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
 
 export interface InventoryUIConfig {
-  readonly x: number;
-  readonly y: number;
+  readonly containerId: string;
   readonly slotSize: number;
   readonly slotsPerRow: number;
   readonly padding: number;
@@ -16,6 +15,7 @@ export class InventoryUI {
   private isVisible: boolean;
   private selectedSlot: number;
   private readonly hotbarSlots: number;
+  private readonly inventoryContainer: HTMLElement | null;
 
   public constructor(config: InventoryUIConfig) {
     this.config = config;
@@ -23,24 +23,220 @@ export class InventoryUI {
     this.isVisible = false;
     this.selectedSlot = -1;
     this.hotbarSlots = GAME_CONSTANTS.INVENTORY.HOTBAR_SLOTS;
+    this.inventoryContainer = document.getElementById(config.containerId);
+    
+    this.initializeHTML();
+  }
+
+  private initializeHTML(): void {
+    if (!this.inventoryContainer) return;
+    
+    // Create hotbar container
+    const hotbarContainer = document.createElement('div');
+    hotbarContainer.id = 'hotbar-container';
+    hotbarContainer.className = 'hotbar-container';
+    hotbarContainer.innerHTML = `
+      <div class="hotbar-title">Hotbar</div>
+      <div id="hotbar-slots" class="hotbar-slots"></div>
+    `;
+    
+    // Create full inventory container (initially hidden)
+    const fullInventoryContainer = document.createElement('div');
+    fullInventoryContainer.id = 'full-inventory-container';
+    fullInventoryContainer.className = 'full-inventory-container';
+    fullInventoryContainer.style.display = 'none';
+    fullInventoryContainer.innerHTML = `
+      <div class="inventory-panel">
+        <div class="inventory-title">Inventory</div>
+        <div id="inventory-slots" class="inventory-slots"></div>
+      </div>
+      <div class="equipment-panel">
+        <div class="equipment-title">Equipment</div>
+        <div id="equipment-slots" class="equipment-slots"></div>
+      </div>
+    `;
+    
+    this.inventoryContainer.appendChild(hotbarContainer);
+    this.inventoryContainer.appendChild(fullInventoryContainer);
+    
+    // Add CSS styles
+    this.addStyles();
+  }
+
+  private addStyles(): void {
+    const style = document.createElement('style');
+    style.textContent = `
+      .hotbar-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+      
+      .hotbar-title {
+        color: #00FF00;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      
+      .hotbar-slots {
+        display: flex;
+        gap: 4px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 8px;
+        border-radius: 6px;
+        border: 2px solid #555;
+      }
+      
+      .full-inventory-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 10px;
+      }
+      
+      .inventory-panel, .equipment-panel {
+        background-color: rgba(45, 45, 45, 0.95);
+        border: 2px solid #555;
+        border-radius: 6px;
+        padding: 10px;
+      }
+      
+      .inventory-title, .equipment-title {
+        color: #00FF00;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+      }
+      
+      .inventory-slots {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 4px;
+      }
+      
+      .equipment-slots {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 4px;
+        width: 120px;
+      }
+      
+      .inventory-slot {
+        width: 32px;
+        height: 32px;
+        background-color: #2D2D2D;
+        border: 2px solid #555;
+        border-radius: 3px;
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.2s ease;
+      }
+      
+      .inventory-slot:hover {
+        border-color: #777;
+      }
+      
+      .inventory-slot.selected {
+        border-color: #FFFF00;
+        box-shadow: 0 0 8px rgba(255, 255, 0, 0.5);
+      }
+      
+      .inventory-slot.has-item {
+        border-color: #888;
+      }
+      
+      .slot-item {
+        width: 24px;
+        height: 24px;
+        border-radius: 2px;
+        border: 1px solid #000;
+      }
+      
+      .slot-quantity {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        color: #fff;
+        font-size: 8px;
+        font-weight: bold;
+        text-shadow: 1px 1px 1px #000;
+        pointer-events: none;
+      }
+      
+      .slot-number {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fff;
+        font-size: 12px;
+        font-weight: bold;
+      }
+      
+      .durability-bar {
+        position: absolute;
+        bottom: 2px;
+        left: 2px;
+        right: 2px;
+        height: 2px;
+        background-color: #333;
+        border-radius: 1px;
+      }
+      
+      .durability-fill {
+        height: 100%;
+        border-radius: 1px;
+        transition: width 0.3s ease;
+      }
+      
+      .durability-high { background-color: #00FF00; }
+      .durability-medium { background-color: #FFFF00; }
+      .durability-low { background-color: #FF0000; }
+      
+      .item-common { background-color: #FFFFFF; }
+      .item-uncommon { background-color: #00FF00; }
+      .item-rare { background-color: #0080FF; }
+      .item-epic { background-color: #8000FF; }
+      .item-legendary { background-color: #FF8000; }
+      
+      .item-weapon { background-color: #FF6B35; }
+      .item-armor { background-color: #4169E1; }
+      .item-resource { background-color: #8B4513; }
+      .item-consumable { background-color: #32CD32; }
+      .item-artifact { background-color: #FFD700; }
+    `;
+    document.head.appendChild(style);
   }
 
   public setInventory(inventory: Inventory): void {
     this.inventory = inventory;
+    this.render();
   }
 
   public setVisible(visible: boolean): void {
     this.isVisible = visible;
+    const fullInventoryContainer = document.getElementById('full-inventory-container');
+    if (fullInventoryContainer) {
+      fullInventoryContainer.style.display = visible ? 'flex' : 'none';
+    }
   }
 
   public toggle(): void {
-    this.isVisible = !this.isVisible;
+    this.setVisible(!this.isVisible);
   }
 
-  public handleClick(mouseX: number, mouseY: number): boolean {
-    if (!this.isVisible || !this.inventory) return false;
-
-    const slotIndex = this.getSlotAtPosition(mouseX, mouseY);
+  public handleClick(element: HTMLElement): boolean {
+    if (!this.inventory) return false;
+    
+    const slotIndex = parseInt(element.dataset.slotIndex || '-1');
     if (slotIndex !== -1) {
       this.selectedSlot = slotIndex;
       
@@ -50,245 +246,155 @@ export class InventoryUI {
         this.inventory.equipItem(slotIndex);
       }
       
+      this.render();
       return true;
     }
-
+    
     return false;
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public render(): void {
     if (!this.inventory) return;
-
-    this.renderHotbar(ctx);
-
+    
+    this.renderHotbar();
     if (this.isVisible) {
-      this.renderFullInventory(ctx);
-      this.renderEquipment(ctx);
+      this.renderFullInventory();
+      this.renderEquipment();
     }
   }
 
-  private renderHotbar(ctx: CanvasRenderingContext2D): void {
-    const slots = this.inventory!.getSlots();
-    const hotbarY = ctx.canvas.height - this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.HOTBAR.BOTTOM_MARGIN;
-    const hotbarStartX = (ctx.canvas.width - (this.hotbarSlots * (this.config.slotSize + this.config.padding))) / 2;
-
-    // Render hotbar background
-    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.HOTBAR.BACKGROUND_COLOR;
-    ctx.fillRect(
-      hotbarStartX - this.config.padding,
-      hotbarY - this.config.padding,
-      this.hotbarSlots * (this.config.slotSize + this.config.padding) + this.config.padding,
-      this.config.slotSize + this.config.padding * 2
-    );
-
-    // Render hotbar slots
+  private renderHotbar(): void {
+    const hotbarSlotsContainer = document.getElementById('hotbar-slots');
+    if (!hotbarSlotsContainer || !this.inventory) return;
+    
+    const slots = this.inventory.getSlots();
+    hotbarSlotsContainer.innerHTML = '';
+    
     for (let i = 0; i < this.hotbarSlots; i++) {
-      const x = hotbarStartX + i * (this.config.slotSize + this.config.padding);
       const slot = slots[i];
+      const slotElement = this.createSlotElement(slot, i, i === this.selectedSlot);
       
-      this.renderSlot(ctx, x, hotbarY, slot, i === this.selectedSlot);
+      // Add slot number
+      const slotNumber = document.createElement('div');
+      slotNumber.className = 'slot-number';
+      slotNumber.textContent = (i + 1).toString();
+      slotElement.appendChild(slotNumber);
       
-      // Render slot number
-      ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.HOTBAR.TEXT_COLOR;
-      ctx.font = GAME_CONSTANTS.UI.INVENTORY.HOTBAR.TEXT_FONT;
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        (i + 1).toString(),
-        x + this.config.slotSize / 2,
-        hotbarY - GAME_CONSTANTS.UI.INVENTORY.HOTBAR.TEXT_OFFSET
-      );
+      hotbarSlotsContainer.appendChild(slotElement);
     }
   }
 
-  private renderFullInventory(ctx: CanvasRenderingContext2D): void {
-    const slots = this.inventory!.getSlots();
+  private renderFullInventory(): void {
+    const inventorySlotsContainer = document.getElementById('inventory-slots');
+    if (!inventorySlotsContainer || !this.inventory) return;
     
-    // Calculate inventory panel dimensions
-    const rows = Math.ceil(slots.length / this.config.slotsPerRow);
-    const panelWidth = this.config.slotsPerRow * (this.config.slotSize + this.config.padding) + this.config.padding;
-    const panelHeight = rows * (this.config.slotSize + this.config.padding) + this.config.padding + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT;
-
-    // Position inventory panel in the right UI area, below player info
-    const panelX = GAME_CONSTANTS.CANVAS.WIDTH - panelWidth - 10;
-    const panelY = 200; // Position below player info panel
-
-    // Render panel background
-    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.BACKGROUND_COLOR;
-    ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
-
-    // Render panel border
-    ctx.strokeStyle = GAME_CONSTANTS.ITEMS.COLORS.BORDER;
-    ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.PANEL.BORDER_WIDTH;
-    ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
-
-    // Render title
-    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_COLOR;
-    ctx.font = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_FONT;
-    ctx.textAlign = 'center';
-    ctx.fillText('Inventory', panelX + panelWidth / 2, panelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_OFFSET);
-
-    // Render inventory slots
+    const slots = this.inventory.getSlots();
+    inventorySlotsContainer.innerHTML = '';
+    
     for (let i = 0; i < slots.length; i++) {
-      const row = Math.floor(i / this.config.slotsPerRow);
-      const col = i % this.config.slotsPerRow;
-      
-      const x = panelX + this.config.padding + col * (this.config.slotSize + this.config.padding);
-      const y = panelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT + this.config.padding + row * (this.config.slotSize + this.config.padding);
-      
-      this.renderSlot(ctx, x, y, slots[i], i === this.selectedSlot);
+      const slot = slots[i];
+      const slotElement = this.createSlotElement(slot, i, i === this.selectedSlot);
+      inventorySlotsContainer.appendChild(slotElement);
     }
   }
 
-  private renderEquipment(ctx: CanvasRenderingContext2D): void {
-    const equipment = this.inventory!.getEquipment();
+  private renderEquipment(): void {
+    const equipmentSlotsContainer = document.getElementById('equipment-slots');
+    if (!equipmentSlotsContainer || !this.inventory) return;
     
-    // Position equipment panel in the right UI area, below inventory
-    const panelWidth = GAME_CONSTANTS.UI.INVENTORY.EQUIPMENT.GRID_COLS * (this.config.slotSize + this.config.padding) + this.config.padding;
-    const panelHeight = GAME_CONSTANTS.UI.INVENTORY.EQUIPMENT.GRID_ROWS * (this.config.slotSize + this.config.padding) + this.config.padding + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT;
-    
-    const equipmentPanelX = GAME_CONSTANTS.CANVAS.WIDTH - panelWidth - 10;
-    const equipmentPanelY = 400; // Position below inventory
+    const equipment = this.inventory.getEquipment();
+    equipmentSlotsContainer.innerHTML = '';
     
     const equipmentSlots = [
-      { key: 'helmet' as keyof Equipment, x: 1, y: 0 },
-      { key: 'chestplate' as keyof Equipment, x: 1, y: 1 },
-      { key: 'leggings' as keyof Equipment, x: 1, y: 2 },
-      { key: 'boots' as keyof Equipment, x: 1, y: 3 },
-      { key: 'weapon' as keyof Equipment, x: 0, y: 1 },
-      { key: 'shield' as keyof Equipment, x: 2, y: 1 }
+      { key: 'helmet' as keyof Equipment, position: 1 },
+      { key: 'chestplate' as keyof Equipment, position: 4 },
+      { key: 'leggings' as keyof Equipment, position: 7 },
+      { key: 'boots' as keyof Equipment, position: 10 },
+      { key: 'weapon' as keyof Equipment, position: 3 },
+      { key: 'shield' as keyof Equipment, position: 5 }
     ];
-
-    // Render equipment panel background
-    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.BACKGROUND_COLOR;
-    ctx.fillRect(equipmentPanelX, equipmentPanelY, panelWidth, panelHeight);
-
-    ctx.strokeStyle = GAME_CONSTANTS.ITEMS.COLORS.BORDER;
-    ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.PANEL.BORDER_WIDTH;
-    ctx.strokeRect(equipmentPanelX, equipmentPanelY, panelWidth, panelHeight);
-
-    // Render title
-    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_COLOR;
-    ctx.font = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_FONT;
-    ctx.textAlign = 'center';
-    ctx.fillText('Equipment', equipmentPanelX + panelWidth / 2, equipmentPanelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_OFFSET);
-
-    // Render equipment slots
-    equipmentSlots.forEach(slotInfo => {
-      const x = equipmentPanelX + this.config.padding + slotInfo.x * (this.config.slotSize + this.config.padding);
-      const y = equipmentPanelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT + this.config.padding + slotInfo.y * (this.config.slotSize + this.config.padding);
-      
-      const item = equipment[slotInfo.key];
-      const slot: InventorySlot = { item: item || null, quantity: item ? 1 : 0 };
-      
-      this.renderSlot(ctx, x, y, slot, false);
-    });
+    
+    // Create 12 slots (3x4 grid)
+    for (let i = 0; i < 12; i++) {
+      const equipSlot = equipmentSlots.find(slot => slot.position === i);
+      if (equipSlot) {
+        const item = equipment[equipSlot.key];
+        const slot: InventorySlot = { item: item || null, quantity: item ? 1 : 0 };
+        const slotElement = this.createSlotElement(slot, -1, false);
+        slotElement.title = equipSlot.key.charAt(0).toUpperCase() + equipSlot.key.slice(1);
+        equipmentSlotsContainer.appendChild(slotElement);
+      } else {
+        // Empty slot
+        const emptySlot = document.createElement('div');
+        emptySlot.className = 'inventory-slot';
+        equipmentSlotsContainer.appendChild(emptySlot);
+      }
+    }
   }
 
-  private renderSlot(ctx: CanvasRenderingContext2D, x: number, y: number, slot: InventorySlot, selected: boolean): void {
-    // Render slot background
-    ctx.fillStyle = selected ? GAME_CONSTANTS.ITEMS.COLORS.SELECTED : GAME_CONSTANTS.ITEMS.COLORS.BACKGROUND;
-    ctx.fillRect(x, y, this.config.slotSize, this.config.slotSize);
-
-    // Render slot border
-    ctx.strokeStyle = selected ? GAME_CONSTANTS.ITEMS.COLORS.SELECTED : GAME_CONSTANTS.ITEMS.COLORS.BORDER;
-    ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_BORDER_WIDTH;
-    ctx.strokeRect(x, y, this.config.slotSize, this.config.slotSize);
-
+  private createSlotElement(slot: InventorySlot, index: number, selected: boolean): HTMLElement {
+    const slotElement = document.createElement('div');
+    slotElement.className = `inventory-slot${selected ? ' selected' : ''}${slot.item ? ' has-item' : ''}`;
+    slotElement.dataset.slotIndex = index.toString();
+    
     if (slot.item) {
-      // Render item (simplified representation)
-      const itemColor = this.getItemColor(slot.item);
-      ctx.fillStyle = itemColor;
-      const itemMargin = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_MARGIN;
-      ctx.fillRect(x + itemMargin, y + itemMargin, this.config.slotSize - itemMargin * 2, this.config.slotSize - itemMargin * 2);
-
-      // Render item border
-      ctx.strokeStyle = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_BORDER_COLOR;
-      ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_BORDER_WIDTH;
-      ctx.strokeRect(x + itemMargin, y + itemMargin, this.config.slotSize - itemMargin * 2, this.config.slotSize - itemMargin * 2);
-
-      // Render quantity if stackable and > 1
+      // Create item visual
+      const itemElement = document.createElement('div');
+      itemElement.className = 'slot-item';
+      
+      // Add rarity class
+      itemElement.classList.add(`item-${slot.item.rarity}`);
+      
+      // Add type class for additional coloring
+      itemElement.classList.add(`item-${slot.item.type}`);
+      
+      slotElement.appendChild(itemElement);
+      
+      // Add quantity if stackable and > 1
       if (slot.item.stackable && slot.quantity > 1) {
-        ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_COLOR;
-        ctx.font = GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_FONT;
-        ctx.textAlign = 'right';
-        ctx.fillText(
-          slot.quantity.toString(),
-          x + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_OFFSET,
-          y + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_OFFSET
-        );
+        const quantityElement = document.createElement('div');
+        quantityElement.className = 'slot-quantity';
+        quantityElement.textContent = slot.quantity.toString();
+        slotElement.appendChild(quantityElement);
       }
-
-      // Render durability bar for equipment
+      
+      // Add durability bar for equipment
       if ((slot.item.type === 'weapon' || slot.item.type === 'armor') && 'durability' in slot.item) {
         const durabilityPercent = slot.item.durability / slot.item.maxDurability;
-        const barWidth = this.config.slotSize - itemMargin * 2;
-        const barHeight = GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BAR_HEIGHT;
         
-        // Background
-        ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BACKGROUND_COLOR;
-        ctx.fillRect(x + itemMargin, y + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BAR_OFFSET, barWidth, barHeight);
+        const durabilityBar = document.createElement('div');
+        durabilityBar.className = 'durability-bar';
         
-        // Durability bar
-        const durabilityColor = durabilityPercent > GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.HIGH_THRESHOLD 
-          ? GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.HIGH_COLOR
-          : durabilityPercent > GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.MEDIUM_THRESHOLD 
-            ? GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.MEDIUM_COLOR
-            : GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.LOW_COLOR;
-        ctx.fillStyle = durabilityColor;
-        ctx.fillRect(x + itemMargin, y + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BAR_OFFSET, barWidth * durabilityPercent, barHeight);
+        const durabilityFill = document.createElement('div');
+        durabilityFill.className = 'durability-fill';
+        durabilityFill.style.width = `${durabilityPercent * 100}%`;
+        
+        if (durabilityPercent > 0.66) {
+          durabilityFill.classList.add('durability-high');
+        } else if (durabilityPercent > 0.33) {
+          durabilityFill.classList.add('durability-medium');
+        } else {
+          durabilityFill.classList.add('durability-low');
+        }
+        
+        durabilityBar.appendChild(durabilityFill);
+        slotElement.appendChild(durabilityBar);
       }
-    }
-  }
-
-  private getItemColor(item: Item): string {
-    // Base color by type
-    switch (item.type) {
-      case 'weapon':
-        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.WEAPON;
-      case 'armor':
-        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.ARMOR;
-      case 'resource':
-        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.RESOURCE;
-      case 'consumable':
-        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.CONSUMABLE;
-      case 'artifact':
-        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.ARTIFACT;
-      default:
-        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.DEFAULT;
-    }
-  }
-
-  private getSlotAtPosition(mouseX: number, mouseY: number): number {
-    if (!this.isVisible || !this.inventory) return -1;
-
-    const slots = this.inventory.getSlots();
-    const rows = Math.ceil(slots.length / this.config.slotsPerRow);
-    const panelWidth = this.config.slotsPerRow * (this.config.slotSize + this.config.padding) + this.config.padding;
-    const panelHeight = rows * (this.config.slotSize + this.config.padding) + this.config.padding + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT;
-
-    // Use the same positioning as renderFullInventory
-    const panelX = GAME_CONSTANTS.CANVAS.WIDTH - panelWidth - 10;
-    const panelY = 200;
-
-    for (let i = 0; i < slots.length; i++) {
-      const row = Math.floor(i / this.config.slotsPerRow);
-      const col = i % this.config.slotsPerRow;
       
-      const x = panelX + this.config.padding + col * (this.config.slotSize + this.config.padding);
-      const y = panelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT + this.config.padding + row * (this.config.slotSize + this.config.padding);
-      
-      if (mouseX >= x && mouseX <= x + this.config.slotSize &&
-          mouseY >= y && mouseY <= y + this.config.slotSize) {
-        return i;
-      }
+      // Add tooltip
+      slotElement.title = `${slot.item.name} (${slot.item.rarity})${slot.item.description ? '\n' + slot.item.description : ''}`;
     }
-
-    return -1;
+    
+    // Add click handler
+    slotElement.addEventListener('click', () => this.handleClick(slotElement));
+    
+    return slotElement;
   }
 
   public selectHotbarSlot(slotNumber: number): void {
     if (slotNumber >= 1 && slotNumber <= this.hotbarSlots) {
       this.selectedSlot = slotNumber - 1;
+      this.render();
     }
   }
 

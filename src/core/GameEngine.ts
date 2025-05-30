@@ -64,8 +64,7 @@ export class GameEngine {
     this.lootSystem = new LootSystem();
     this.particleSystem = new ParticleSystem();
     this.inventoryUI = new InventoryUI({
-      x: 0,
-      y: 0,
+      containerId: 'inventory-container',
       slotSize: 32,
       slotsPerRow: 6,
       padding: 4
@@ -79,10 +78,7 @@ export class GameEngine {
     });
     
     this.playerInfoUI = new PlayerInfoUI({
-      x: GAME_CONSTANTS.CANVAS.WIDTH - 190,
-      y: 10,
-      width: 180,
-      height: 180
+      containerId: 'player-info-panel'
     });
     this.player = null;
     this.animationFrameId = 0;
@@ -287,33 +283,13 @@ export class GameEngine {
     }
 
     // Render UI components
-    this.playerInfoUI.render(this.ctx);
-    this.inventoryUI.render(this.ctx);
+    this.playerInfoUI.render();
+    this.inventoryUI.render();
     
     // Render help hint button (always visible)
     this.helpUI.renderHintButton(this.ctx);
     
     // Render help UI (only if visible)
     this.helpUI.render(this.ctx);
-
-    // Render debug info
-    this.renderDebugInfo();
-  }
-
-  private renderDebugInfo(): void {
-    this.ctx.save();
-    
-    // Set up debug text style
-    this.ctx.font = '14px monospace';
-    this.ctx.fillStyle = '#00FF00';
-    this.ctx.textBaseline = 'top';
-    
-    // Render FPS counter
-    this.ctx.fillText(`FPS: ${this.fps}`, 10, 10);
-    
-    // Render particle count
-    this.ctx.fillText(`Particles: ${this.particleSystem.getParticleCount()}`, 10, 28);
-    
-    this.ctx.restore();
   }
 }

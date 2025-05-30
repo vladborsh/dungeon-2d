@@ -34,7 +34,7 @@ export class ItemDrop implements GameObject {
   }
 
   public isExpired(): boolean {
-    return Date.now() - this.createdTime > this.lifetime;
+    return false; // Items never expire
   }
 
   public canCollect(playerPosition: Position, playerSize: Size): boolean {
@@ -93,20 +93,6 @@ export class ItemDrop implements GameObject {
         this.quantity.toString(),
         this.position.x + this.size.width / 2,
         renderY + this.size.height - dropConstants.TEXT.QUANTITY_OFFSET
-      );
-    }
-
-    // Draw pickup hint when close to expiration
-    const timeLeft = this.lifetime - (Date.now() - this.createdTime);
-    if (timeLeft < dropConstants.EXPIRATION.WARNING_TIME) {
-      const alpha = Math.sin(Date.now() * dropConstants.EXPIRATION.PULSE_SPEED) * 0.5 + 0.5; // Pulsing effect
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      ctx.font = dropConstants.TEXT.HINT_FONT;
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        'Press E',
-        this.position.x + this.size.width / 2,
-        renderY - dropConstants.TEXT.HINT_OFFSET
       );
     }
   }
