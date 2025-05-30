@@ -6,6 +6,7 @@ import { InputManager } from './InputManager';
 import { LootSystem } from '../game/systems/LootSystem';
 import { LootGenerator } from '../game/systems/LootGenerator';
 import { DungeonLootManager } from '../game/systems/DungeonLootManager';
+import { EnemyManager } from '../game/systems/EnemyManager';
 import { EventHandler } from '../game/systems/EventHandler';
 import { InventoryUI } from '../rendering/ui/InventoryUI';
 import { HelpUI } from '../rendering/ui/HelpUI';
@@ -21,6 +22,7 @@ export class GameEngine {
   private readonly lootSystem: LootSystem;
   private readonly lootGenerator: LootGenerator;
   private readonly dungeonLootManager: DungeonLootManager;
+  private readonly enemyManager: EnemyManager;
   private readonly eventHandler: EventHandler;
   private readonly inventoryUI: InventoryUI;
   private readonly helpUI: HelpUI;
@@ -112,6 +114,7 @@ export class GameEngine {
     // Initialize specialized systems
     this.lootGenerator = new LootGenerator(this.lootSystem);
     this.dungeonLootManager = new DungeonLootManager(this.level, this.lootGenerator);
+    this.enemyManager = new EnemyManager(this.level);
     this.eventHandler = new EventHandler(
       this.canvas,
       this.player,
@@ -122,6 +125,9 @@ export class GameEngine {
     
     // Generate loot throughout the dungeon
     this.dungeonLootManager.generateDungeonLoot();
+    
+    // Generate enemies throughout the dungeon
+    this.enemyManager.initializeEnemies();
   }
 
   public start(): void {
@@ -162,6 +168,13 @@ export class GameEngine {
    */
   public getDungeonLootManager(): DungeonLootManager {
     return this.dungeonLootManager;
+  }
+
+  /**
+   * Get the enemy manager for external access
+   */
+  public getEnemyManager(): EnemyManager {
+    return this.enemyManager;
   }
 
   /**
@@ -230,6 +243,11 @@ export class GameEngine {
       object.update();
     }
     
+    // Update enemy system
+    if (this.player) {
+      this.enemyManager.update(this.player);
+    }
+    
     // Update particle system
     this.particleSystem.update();
     
@@ -271,13 +289,16 @@ export class GameEngine {
     // Render level
     this.level.render(this.ctx);
 
-    // Render item drops
-    this.lootSystem.renderItemDrops(this.ctx);
-
     // Render particles (behind game objects)
     this.particleSystem.render(this.ctx);
 
-    // Render all game objects
+    // Render item drops (in front of enemies)
+    this.lootSystem.renderItemDrops(this.ctx);
+
+    // Render enemies (behind collectibles)
+    this.enemyManager.render(this.ctx);
+
+    // Render all game objects (player in front of everything)
     for (const object of this.gameObjects) {
       object.render(this.ctx);
     }

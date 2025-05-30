@@ -50,8 +50,8 @@ export const GAME_CONSTANTS = {
     DROP_CHANCE: 1.0, // 100% chance for loot generation to guarantee dungeon loot appears
     DROP: {
       SIZE: {
-        WIDTH: 16,
-        HEIGHT: 16,
+        WIDTH: 12,
+        HEIGHT: 12,
       },
       LIFETIME: 30000, // 30 seconds in milliseconds
       COLLECTION_RADIUS: 24,
@@ -262,6 +262,84 @@ export const GAME_CONSTANTS = {
       },
       GRAVITY: 0.1,
       DECAY: 0.02,
+    },
+  },
+  ENEMIES: {
+    GOBLIN: {
+      SIZE: 16,
+      HEALTH: 50,
+      DAMAGE: 15,
+      SPEED: 1.5,
+      DETECTION_RADIUS: 80,
+      ATTACK_RANGE: 20,
+      ATTACK_COOLDOWN: 1000, // milliseconds
+      COLOR: '#8B4513',
+      EXPERIENCE_REWARD: 25,
+    },
+    SKELETON: {
+      SIZE: 18,
+      HEALTH: 75,
+      DAMAGE: 20,
+      SPEED: 2.0,
+      DETECTION_RADIUS: 100,
+      ATTACK_RANGE: 24,
+      ATTACK_COOLDOWN: 800,
+      COLOR: '#F5F5DC',
+      EXPERIENCE_REWARD: 35,
+    },
+    SPIDER: {
+      SIZE: 14,
+      HEALTH: 30,
+      DAMAGE: 10,
+      SPEED: 2.5,
+      DETECTION_RADIUS: 60,
+      ATTACK_RANGE: 16,
+      ATTACK_COOLDOWN: 600,
+      COLOR: '#4B0082',
+      EXPERIENCE_REWARD: 15,
+    },
+    TROLL: {
+      SIZE: 24,
+      HEALTH: 150,
+      DAMAGE: 35,
+      SPEED: 0.8,
+      DETECTION_RADIUS: 120,
+      ATTACK_RANGE: 30,
+      ATTACK_COOLDOWN: 1500,
+      COLOR: '#556B2F',
+      EXPERIENCE_REWARD: 75,
+    },
+    SPAWN: {
+      ROOM_CHANCE: 0.7, // 70% chance for enemies in rooms
+      PATH_CHANCE: 0.2, // 20% chance for enemies on paths
+      MAX_ENEMIES_PER_ROOM: 3,
+      MAX_ENEMIES_PER_PATH_SECTION: 1,
+      MIN_DISTANCE_FROM_START: 150, // pixels
+      RESPAWN_TIME: 30000, // 30 seconds
+    },
+    AI: {
+      PATHFINDING: {
+        MAX_SEARCH_DISTANCE: 200,
+        UPDATE_INTERVAL: 500, // milliseconds
+      },
+      PATROL: {
+        POINT_COUNT: 3,
+        WAIT_TIME: 2000, // milliseconds
+        PATROL_RADIUS: 100,
+      },
+      RANDOM: {
+        DIRECTION_CHANGE_INTERVAL: 2000, // milliseconds
+        MOVEMENT_PROBABILITY: 0.8,
+      },
+    },
+    RENDERING: {
+      SHADOW: {
+        COLOR: 'rgba(0, 0, 0, 0.3)',
+        OFFSET_X: 2,
+        OFFSET_Y: 2,
+        SCALE_X: 0.8,
+        SCALE_Y: 0.4,
+      },
     },
   },
 } as const;

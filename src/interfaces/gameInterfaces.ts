@@ -121,3 +121,35 @@ export interface PlayerStats {
   experience: number;
   experienceToNext: number;
 }
+
+export interface EnemyStats {
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly damage: number;
+  readonly speed: number;
+  readonly detectionRadius: number;
+  readonly attackRange: number;
+  readonly attackCooldown: number;
+  readonly experienceReward: number;
+}
+
+export enum EnemyType {
+  GOBLIN = 'goblin',
+  SKELETON = 'skeleton',
+  SPIDER = 'spider',
+  TROLL = 'troll'
+}
+
+export enum EnemyState {
+  IDLE = 'idle',
+  PATROLLING = 'patrolling',
+  CHASING = 'chasing',
+  ATTACKING = 'attacking',
+  DEAD = 'dead'
+}
+
+export interface EnemyAI {
+  update(enemy: GameObject, player: GameObject, level: any): void;
+  getState(): EnemyState;
+  reset(): void;
+}
