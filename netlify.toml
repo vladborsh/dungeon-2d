@@ -1,0 +1,104 @@
+[build]
+  # Directory to change to before starting a build
+  base = "."
+  
+  # Directory with the deployable files
+  publish = "dist"
+  
+  # Build command
+  command = "npm run build"
+
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "18"
+  # npm cache configuration
+  NPM_FLAGS = "--prefer-offline --no-audit"
+
+# Headers for better caching and security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'"
+
+# Cache static assets for 1 year
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache images for 1 month
+[[headers]]
+  for = "*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+[[headers]]
+  for = "*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+[[headers]]
+  for = "*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+# Cache audio files for 1 week
+[[headers]]
+  for = "*.mp3"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "*.wav"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# SPA fallback - redirect all non-asset requests to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"]}
+  force = false
+
+# Environment-specific settings
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "development"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "development"
+
+# Build processing
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true

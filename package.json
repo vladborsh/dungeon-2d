@@ -8,7 +8,13 @@
     "build": "webpack --mode production",
     "dev": "webpack serve --mode development",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix"
+    "lint:fix": "eslint . --ext .ts --fix",
+    "netlify:build": "npm run build",
+    "netlify:serve": "npx netlify dev",
+    "deploy": "npm run build && netlify deploy --prod --dir=dist",
+    "deploy:preview": "npm run build && netlify deploy --dir=dist",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean && npm run lint"
   },
   "keywords": [
     "game",
@@ -21,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "html-webpack-plugin": "^5.6.3",
+    "netlify-cli": "^17.36.4",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
     "webpack": "^5.99.9",
