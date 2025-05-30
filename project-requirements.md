@@ -27,7 +27,7 @@
 - Collision detection and movement physics
 
 ### Combat & AI
-- Turn-based or real-time combat mechanics
+- Real-time combat mechanics
 - Monster AI with pathfinding
 - Damage calculation system
 - Status effect framework

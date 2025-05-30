@@ -3,6 +3,8 @@ export enum CellType {
   Path = 'path',
   Start = 'start',
   End = 'end',
+  Room = 'room',
+  RoomWall = 'room-wall',
 }
 
 export interface MazeCell {

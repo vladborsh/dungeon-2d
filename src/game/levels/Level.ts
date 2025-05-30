@@ -10,6 +10,8 @@ export class Level {
   private readonly pathSprite: Sprite;
   private readonly startSprite: Sprite;
   private readonly endSprite: Sprite;
+  private readonly roomSprite: Sprite;
+  private readonly roomWallSprite: Sprite;
 
   public constructor() {
     const mazeWidth = Math.floor(GAME_CONSTANTS.CANVAS.WIDTH / GAME_CONSTANTS.TILE_SIZE);
@@ -22,6 +24,8 @@ export class Level {
     this.pathSprite = this.createSprite(GAME_CONSTANTS.COLORS.FLOOR);
     this.startSprite = this.createSprite('#00FF00'); // Green for start
     this.endSprite = this.createSprite('#FF0000');   // Red for end
+    this.roomSprite = this.createSprite(GAME_CONSTANTS.COLORS.ROOM);
+    this.roomWallSprite = this.createSprite(GAME_CONSTANTS.COLORS.ROOM_WALL);
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
@@ -45,6 +49,12 @@ export class Level {
             break;
           case CellType.End:
             this.endSprite.render(ctx, screenX, screenY);
+            break;
+          case CellType.Room:
+            this.roomSprite.render(ctx, screenX, screenY);
+            break;
+          case CellType.RoomWall:
+            this.roomWallSprite.render(ctx, screenX, screenY);
             break;
         }
       }
@@ -78,7 +88,8 @@ export class Level {
       return true;
     }
 
-    return this.maze[tileY][tileX].type === CellType.Wall;
+    const cellType = this.maze[tileY][tileX].type;
+    return cellType === CellType.Wall || cellType === CellType.RoomWall;
   }
 
   private createSprite(color: string): Sprite {
