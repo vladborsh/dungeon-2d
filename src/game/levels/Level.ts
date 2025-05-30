@@ -92,6 +92,40 @@ export class Level {
     return cellType === CellType.Wall || cellType === CellType.RoomWall;
   }
 
+  /**
+   * Get the cell type at maze coordinates (not pixel coordinates)
+   */
+  public getCellType(tileX: number, tileY: number): CellType {
+    if (
+      tileX < 0 ||
+      tileY < 0 ||
+      tileY >= this.maze.length ||
+      tileX >= this.maze[0].length
+    ) {
+      return CellType.Wall;
+    }
+
+    return this.maze[tileY][tileX].type;
+  }
+
+  /**
+   * Check if a pixel position is walkable (not a wall)
+   */
+  public isWalkable(x: number, y: number): boolean {
+    return !this.isWall(x, y);
+  }
+
+  /**
+   * Check if tile coordinates are walkable
+   */
+  public isTileWalkable(tileX: number, tileY: number): boolean {
+    const cellType = this.getCellType(tileX, tileY);
+    return cellType === CellType.Path || 
+           cellType === CellType.Room || 
+           cellType === CellType.Start || 
+           cellType === CellType.End;
+  }
+
   private createSprite(color: string): Sprite {
     const sprite = new Sprite({
       width: GAME_CONSTANTS.TILE_SIZE,

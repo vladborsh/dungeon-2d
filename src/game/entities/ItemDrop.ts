@@ -13,11 +13,14 @@ export class ItemDrop implements GameObject {
 
   public constructor(position: Position, item: Item, quantity: number = 1) {
     this.position = position;
-    this.size = { width: 16, height: 16 };
+    this.size = { 
+      width: GAME_CONSTANTS.ITEMS.DROP.SIZE.WIDTH, 
+      height: GAME_CONSTANTS.ITEMS.DROP.SIZE.HEIGHT 
+    };
     this.item = item;
     this.quantity = quantity;
     this.createdTime = Date.now();
-    this.lifetime = 30000; // 30 seconds
+    this.lifetime = GAME_CONSTANTS.ITEMS.DROP.LIFETIME;
     this.bobOffset = 0;
     this.bobDirection = 1;
   }
@@ -39,42 +42,43 @@ export class ItemDrop implements GameObject {
       Math.pow(this.position.x - playerPosition.x, 2) +
       Math.pow(this.position.y - playerPosition.y, 2)
     );
-    return distance < 24; // Collection radius
+    return distance < GAME_CONSTANTS.ITEMS.DROP.COLLECTION_RADIUS;
   }
 
   public update(): void {
     // Create a bobbing animation
-    this.bobOffset += this.bobDirection * 0.1;
-    if (Math.abs(this.bobOffset) > 2) {
+    this.bobOffset += this.bobDirection * GAME_CONSTANTS.ITEMS.DROP.ANIMATION.BOB_SPEED;
+    if (Math.abs(this.bobOffset) > GAME_CONSTANTS.ITEMS.DROP.ANIMATION.BOB_OFFSET_LIMIT) {
       this.bobDirection *= -1;
     }
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
     const renderY = this.position.y + this.bobOffset;
+    const dropConstants = GAME_CONSTANTS.ITEMS.DROP;
     
     // Draw item background glow based on rarity
     const glowColor = this.getRarityColor();
     ctx.shadowColor = glowColor;
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = dropConstants.VISUAL.SHADOW_BLUR;
     
     // Draw item representation
     ctx.fillStyle = this.getItemColor();
     ctx.fillRect(
-      this.position.x + 2,
-      renderY + 2,
-      this.size.width - 4,
-      this.size.height - 4
+      this.position.x + dropConstants.VISUAL.PADDING,
+      renderY + dropConstants.VISUAL.PADDING,
+      this.size.width - dropConstants.VISUAL.PADDING * 2,
+      this.size.height - dropConstants.VISUAL.PADDING * 2
     );
 
     // Draw item border
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = dropConstants.VISUAL.BORDER_COLOR;
+    ctx.lineWidth = dropConstants.VISUAL.BORDER_WIDTH;
     ctx.strokeRect(
-      this.position.x + 2,
-      renderY + 2,
-      this.size.width - 4,
-      this.size.height - 4
+      this.position.x + dropConstants.VISUAL.PADDING,
+      renderY + dropConstants.VISUAL.PADDING,
+      this.size.width - dropConstants.VISUAL.PADDING * 2,
+      this.size.height - dropConstants.VISUAL.PADDING * 2
     );
 
     // Reset shadow
@@ -82,27 +86,27 @@ export class ItemDrop implements GameObject {
 
     // Draw quantity if > 1
     if (this.quantity > 1) {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '8px Arial';
+      ctx.fillStyle = dropConstants.TEXT.QUANTITY_COLOR;
+      ctx.font = dropConstants.TEXT.QUANTITY_FONT;
       ctx.textAlign = 'center';
       ctx.fillText(
         this.quantity.toString(),
         this.position.x + this.size.width / 2,
-        renderY + this.size.height - 2
+        renderY + this.size.height - dropConstants.TEXT.QUANTITY_OFFSET
       );
     }
 
     // Draw pickup hint when close to expiration
     const timeLeft = this.lifetime - (Date.now() - this.createdTime);
-    if (timeLeft < 5000) { // Last 5 seconds
-      const alpha = Math.sin(Date.now() * 0.01) * 0.5 + 0.5; // Pulsing effect
+    if (timeLeft < dropConstants.EXPIRATION.WARNING_TIME) {
+      const alpha = Math.sin(Date.now() * dropConstants.EXPIRATION.PULSE_SPEED) * 0.5 + 0.5; // Pulsing effect
       ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      ctx.font = '10px Arial';
+      ctx.font = dropConstants.TEXT.HINT_FONT;
       ctx.textAlign = 'center';
       ctx.fillText(
         'Press E',
         this.position.x + this.size.width / 2,
-        renderY - 5
+        renderY - dropConstants.TEXT.HINT_OFFSET
       );
     }
   }
@@ -110,17 +114,17 @@ export class ItemDrop implements GameObject {
   private getItemColor(): string {
     switch (this.item.type) {
       case 'weapon':
-        return '#8B4513'; // Brown
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.WEAPON;
       case 'armor':
-        return '#696969'; // Gray
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.ARMOR;
       case 'resource':
-        return '#228B22'; // Green
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.RESOURCE;
       case 'consumable':
-        return '#4169E1'; // Blue
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.CONSUMABLE;
       case 'artifact':
-        return '#FFD700'; // Gold
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.ARTIFACT;
       default:
-        return '#FFFFFF';
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.DEFAULT;
     }
   }
 

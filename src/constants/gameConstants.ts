@@ -47,6 +47,193 @@ export const GAME_CONSTANTS = {
       BORDER: '#555555',
       SELECTED: '#FFFF00',
     },
-    DROP_CHANCE: 0.3, // 30% chance for monsters to drop items
+    DROP_CHANCE: 1.0, // 100% chance for loot generation to guarantee dungeon loot appears
+    DROP: {
+      SIZE: {
+        WIDTH: 16,
+        HEIGHT: 16,
+      },
+      LIFETIME: 30000, // 30 seconds in milliseconds
+      COLLECTION_RADIUS: 24,
+      ANIMATION: {
+        BOB_SPEED: 0.1,
+        BOB_OFFSET_LIMIT: 2,
+      },
+      VISUAL: {
+        PADDING: 2,
+        SHADOW_BLUR: 8,
+        BORDER_WIDTH: 1,
+        BORDER_COLOR: '#000000',
+      },
+      TEXT: {
+        QUANTITY_FONT: '8px Arial',
+        QUANTITY_COLOR: '#FFFFFF',
+        HINT_FONT: '10px Arial',
+        HINT_COLOR: '#FFFFFF',
+        HINT_OFFSET: 5,
+        QUANTITY_OFFSET: 2,
+      },
+      EXPIRATION: {
+        WARNING_TIME: 5000, // 5 seconds before expiration
+        PULSE_SPEED: 0.01,
+      },
+    },
+  },
+  LOOT_GENERATION: {
+    POSITION_SPREAD: 32,
+    ROOM_LOOT_CHANCE: 0.8, // High chance for room loot
+    PATH_LOOT_PERCENTAGE: 0.12, // 12% of path cells get loot
+    INTERSECTION_BASE_CHANCE: 0.3, // Base chance for intersection loot
+    END_BONUS_RADIUS: 128, // Radius for end area bonus loot
+    END_BONUS_COUNT: 8, // Number of bonus items near end
+  },
+  ITEM_GENERATION: {
+    MAX_RANDOM_ITEMS: 3,
+    QUEST_REWARD_COUNT: 2,
+    DUNGEON_LOOT_COUNT: 4,
+    STARTER_ITEMS: ['rusty_sword', 'health_potion', 'healing_herb'],
+    RARITY_WEIGHTS: {
+      BASE: {
+        COMMON: 0.7,
+        UNCOMMON: 0.2,
+        RARE: 0.08,
+        EPIC: 0.02,
+        LEGENDARY: 0.0,
+      },
+      LEVEL_MODIFIERS: {
+        COMMON: 0.05,
+        UNCOMMON: 0.02,
+        RARE: 0.02,
+        EPIC: 0.01,
+        LEGENDARY: 0.005,
+      },
+      MINIMUMS: {
+        COMMON: 0.3,
+      },
+      MAXIMUMS: {
+        UNCOMMON: 0.4,
+        RARE: 0.2,
+        EPIC: 0.08,
+        LEGENDARY: 0.02,
+      },
+    },
+    SHOP_RARITY: {
+      BASIC: {
+        common: 6,
+        uncommon: 2,
+        rare: 1,
+      },
+      ADVANCED: {
+        uncommon: 4,
+        rare: 3,
+        epic: 2,
+        legendary: 1,
+      },
+    },
+  },
+  CONTROLS: {
+    INVENTORY_TOGGLE: 'i',
+    HELP_TOGGLE: 'h',
+    COLLECT_ITEM: 'e',
+    PAUSE: 'p',
+    DEBUG_INFO: 'f3',
+  },
+  UI: {
+    INVENTORY: {
+      HOTBAR: {
+        BOTTOM_MARGIN: 20,
+        BACKGROUND_COLOR: 'rgba(0, 0, 0, 0.7)',
+        TEXT_COLOR: '#FFFFFF',
+        TEXT_FONT: '12px Arial',
+        TEXT_OFFSET: 5,
+      },
+      PANEL: {
+        BACKGROUND_COLOR: 'rgba(45, 45, 45, 0.95)',
+        TITLE_HEIGHT: 30,
+        TITLE_COLOR: '#FFFFFF',
+        TITLE_FONT: '16px Arial',
+        TITLE_OFFSET: 20,
+        BORDER_WIDTH: 2,
+      },
+      EQUIPMENT: {
+        PANEL_X: 50,
+        PANEL_Y: 50,
+        GRID_COLS: 3,
+        GRID_ROWS: 4,
+      },
+      SLOT: {
+        ITEM_MARGIN: 4,
+        ITEM_BORDER_COLOR: '#000000',
+        ITEM_BORDER_WIDTH: 1,
+        QUANTITY_COLOR: '#FFFFFF',
+        QUANTITY_FONT: '10px Arial',
+        QUANTITY_OFFSET: 2,
+        DURABILITY: {
+          BAR_HEIGHT: 2,
+          BAR_OFFSET: 6,
+          BACKGROUND_COLOR: '#333333',
+          HIGH_COLOR: '#00FF00',
+          MEDIUM_COLOR: '#FFFF00',
+          LOW_COLOR: '#FF0000',
+          HIGH_THRESHOLD: 0.5,
+          MEDIUM_THRESHOLD: 0.25,
+        },
+      },
+    },
+    ITEM_TYPE_COLORS: {
+      WEAPON: '#8B4513',    // Brown
+      ARMOR: '#696969',     // Gray
+      RESOURCE: '#228B22',  // Green
+      CONSUMABLE: '#4169E1', // Blue
+      ARTIFACT: '#FFD700',  // Gold
+      DEFAULT: '#FFFFFF',   // White
+    },
+    HELP: {
+      BACKGROUND_COLOR: 'rgba(20, 20, 20, 0.95)',
+      BORDER_COLOR: '#555555',
+      BORDER_WIDTH: 2,
+      TITLE_COLOR: '#00FF00',
+      TITLE_FONT: '18px Arial',
+      TITLE_OFFSET: 30,
+      TEXT_COLOR: '#FFFFFF',
+      TEXT_FONT: '12px Arial',
+      HEADER_COLOR: '#FFD700',
+      CONTROL_COLOR: '#CCCCCC',
+      CONTENT_START_Y: 50,
+      LINE_HEIGHT: 16,
+      PADDING: 20,
+      INDENT: 40,
+      HINT_BUTTON: {
+        X: 10,
+        Y: 50,
+        WIDTH: 30,
+        HEIGHT: 30,
+        BACKGROUND_COLOR: 'rgba(0, 0, 0, 0.7)',
+        BORDER_COLOR: '#555555',
+        BORDER_WIDTH: 2,
+        TEXT_COLOR: '#FFFFFF',
+        TEXT_FONT: '16px Arial',
+      },
+    },
+    PLAYER_INFO: {
+      BACKGROUND_COLOR: 'rgba(0, 0, 0, 0.8)',
+      BORDER_COLOR: '#555555',
+      BORDER_WIDTH: 2,
+      TITLE_COLOR: '#00FF00',
+      TITLE_FONT: '14px Arial',
+      TITLE_OFFSET: 15,
+      TEXT_COLOR: '#FFFFFF',
+      TEXT_FONT: '12px Arial',
+      CONTENT_START_Y: 35,
+      LINE_HEIGHT: 14,
+      PADDING: 10,
+      BAR_HEIGHT: 8,
+      BAR_BACKGROUND_COLOR: '#333333',
+      BAR_BORDER_COLOR: '#555555',
+      HEALTH_HIGH_COLOR: '#00FF00',
+      HEALTH_MEDIUM_COLOR: '#FFFF00',
+      HEALTH_LOW_COLOR: '#FF0000',
+      MANA_COLOR: '#0080FF',
+    },
   },
 } as const;

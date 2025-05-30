@@ -69,11 +69,11 @@ export class InventoryUI {
 
   private renderHotbar(ctx: CanvasRenderingContext2D): void {
     const slots = this.inventory!.getSlots();
-    const hotbarY = ctx.canvas.height - this.config.slotSize - 20;
+    const hotbarY = ctx.canvas.height - this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.HOTBAR.BOTTOM_MARGIN;
     const hotbarStartX = (ctx.canvas.width - (this.hotbarSlots * (this.config.slotSize + this.config.padding))) / 2;
 
     // Render hotbar background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.HOTBAR.BACKGROUND_COLOR;
     ctx.fillRect(
       hotbarStartX - this.config.padding,
       hotbarY - this.config.padding,
@@ -89,13 +89,13 @@ export class InventoryUI {
       this.renderSlot(ctx, x, hotbarY, slot, i === this.selectedSlot);
       
       // Render slot number
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = '12px Arial';
+      ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.HOTBAR.TEXT_COLOR;
+      ctx.font = GAME_CONSTANTS.UI.INVENTORY.HOTBAR.TEXT_FONT;
       ctx.textAlign = 'center';
       ctx.fillText(
         (i + 1).toString(),
         x + this.config.slotSize / 2,
-        hotbarY - 5
+        hotbarY - GAME_CONSTANTS.UI.INVENTORY.HOTBAR.TEXT_OFFSET
       );
     }
   }
@@ -106,26 +106,26 @@ export class InventoryUI {
     // Calculate inventory panel dimensions
     const rows = Math.ceil(slots.length / this.config.slotsPerRow);
     const panelWidth = this.config.slotsPerRow * (this.config.slotSize + this.config.padding) + this.config.padding;
-    const panelHeight = rows * (this.config.slotSize + this.config.padding) + this.config.padding + 30; // +30 for title
+    const panelHeight = rows * (this.config.slotSize + this.config.padding) + this.config.padding + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT;
 
-    // Center the inventory panel
-    const panelX = (ctx.canvas.width - panelWidth) / 2;
-    const panelY = (ctx.canvas.height - panelHeight) / 2;
+    // Position inventory panel in the right UI area, below player info
+    const panelX = GAME_CONSTANTS.CANVAS.WIDTH - panelWidth - 10;
+    const panelY = 200; // Position below player info panel
 
     // Render panel background
-    ctx.fillStyle = 'rgba(45, 45, 45, 0.95)';
+    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.BACKGROUND_COLOR;
     ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
 
     // Render panel border
     ctx.strokeStyle = GAME_CONSTANTS.ITEMS.COLORS.BORDER;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.PANEL.BORDER_WIDTH;
     ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
 
     // Render title
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px Arial';
+    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_COLOR;
+    ctx.font = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_FONT;
     ctx.textAlign = 'center';
-    ctx.fillText('Inventory', panelX + panelWidth / 2, panelY + 20);
+    ctx.fillText('Inventory', panelX + panelWidth / 2, panelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_OFFSET);
 
     // Render inventory slots
     for (let i = 0; i < slots.length; i++) {
@@ -133,7 +133,7 @@ export class InventoryUI {
       const col = i % this.config.slotsPerRow;
       
       const x = panelX + this.config.padding + col * (this.config.slotSize + this.config.padding);
-      const y = panelY + 30 + this.config.padding + row * (this.config.slotSize + this.config.padding);
+      const y = panelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT + this.config.padding + row * (this.config.slotSize + this.config.padding);
       
       this.renderSlot(ctx, x, y, slots[i], i === this.selectedSlot);
     }
@@ -141,8 +141,14 @@ export class InventoryUI {
 
   private renderEquipment(ctx: CanvasRenderingContext2D): void {
     const equipment = this.inventory!.getEquipment();
-    const equipmentPanelX = 50;
-    const equipmentPanelY = 50;
+    
+    // Position equipment panel in the right UI area, below inventory
+    const panelWidth = GAME_CONSTANTS.UI.INVENTORY.EQUIPMENT.GRID_COLS * (this.config.slotSize + this.config.padding) + this.config.padding;
+    const panelHeight = GAME_CONSTANTS.UI.INVENTORY.EQUIPMENT.GRID_ROWS * (this.config.slotSize + this.config.padding) + this.config.padding + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT;
+    
+    const equipmentPanelX = GAME_CONSTANTS.CANVAS.WIDTH - panelWidth - 10;
+    const equipmentPanelY = 400; // Position below inventory
+    
     const equipmentSlots = [
       { key: 'helmet' as keyof Equipment, x: 1, y: 0 },
       { key: 'chestplate' as keyof Equipment, x: 1, y: 1 },
@@ -153,26 +159,23 @@ export class InventoryUI {
     ];
 
     // Render equipment panel background
-    const panelWidth = 3 * (this.config.slotSize + this.config.padding) + this.config.padding;
-    const panelHeight = 4 * (this.config.slotSize + this.config.padding) + this.config.padding + 30;
-    
-    ctx.fillStyle = 'rgba(45, 45, 45, 0.95)';
+    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.BACKGROUND_COLOR;
     ctx.fillRect(equipmentPanelX, equipmentPanelY, panelWidth, panelHeight);
 
     ctx.strokeStyle = GAME_CONSTANTS.ITEMS.COLORS.BORDER;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.PANEL.BORDER_WIDTH;
     ctx.strokeRect(equipmentPanelX, equipmentPanelY, panelWidth, panelHeight);
 
     // Render title
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px Arial';
+    ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_COLOR;
+    ctx.font = GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_FONT;
     ctx.textAlign = 'center';
-    ctx.fillText('Equipment', equipmentPanelX + panelWidth / 2, equipmentPanelY + 20);
+    ctx.fillText('Equipment', equipmentPanelX + panelWidth / 2, equipmentPanelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_OFFSET);
 
     // Render equipment slots
     equipmentSlots.forEach(slotInfo => {
       const x = equipmentPanelX + this.config.padding + slotInfo.x * (this.config.slotSize + this.config.padding);
-      const y = equipmentPanelY + 30 + this.config.padding + slotInfo.y * (this.config.slotSize + this.config.padding);
+      const y = equipmentPanelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT + this.config.padding + slotInfo.y * (this.config.slotSize + this.config.padding);
       
       const item = equipment[slotInfo.key];
       const slot: InventorySlot = { item: item || null, quantity: item ? 1 : 0 };
@@ -188,73 +191,71 @@ export class InventoryUI {
 
     // Render slot border
     ctx.strokeStyle = selected ? GAME_CONSTANTS.ITEMS.COLORS.SELECTED : GAME_CONSTANTS.ITEMS.COLORS.BORDER;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_BORDER_WIDTH;
     ctx.strokeRect(x, y, this.config.slotSize, this.config.slotSize);
 
     if (slot.item) {
       // Render item (simplified representation)
       const itemColor = this.getItemColor(slot.item);
       ctx.fillStyle = itemColor;
-      ctx.fillRect(x + 4, y + 4, this.config.slotSize - 8, this.config.slotSize - 8);
+      const itemMargin = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_MARGIN;
+      ctx.fillRect(x + itemMargin, y + itemMargin, this.config.slotSize - itemMargin * 2, this.config.slotSize - itemMargin * 2);
 
       // Render item border
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x + 4, y + 4, this.config.slotSize - 8, this.config.slotSize - 8);
+      ctx.strokeStyle = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_BORDER_COLOR;
+      ctx.lineWidth = GAME_CONSTANTS.UI.INVENTORY.SLOT.ITEM_BORDER_WIDTH;
+      ctx.strokeRect(x + itemMargin, y + itemMargin, this.config.slotSize - itemMargin * 2, this.config.slotSize - itemMargin * 2);
 
       // Render quantity if stackable and > 1
       if (slot.item.stackable && slot.quantity > 1) {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '10px Arial';
+        ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_COLOR;
+        ctx.font = GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_FONT;
         ctx.textAlign = 'right';
         ctx.fillText(
           slot.quantity.toString(),
-          x + this.config.slotSize - 2,
-          y + this.config.slotSize - 2
+          x + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_OFFSET,
+          y + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.QUANTITY_OFFSET
         );
       }
 
       // Render durability bar for equipment
       if ((slot.item.type === 'weapon' || slot.item.type === 'armor') && 'durability' in slot.item) {
         const durabilityPercent = slot.item.durability / slot.item.maxDurability;
-        const barWidth = this.config.slotSize - 8;
-        const barHeight = 2;
+        const barWidth = this.config.slotSize - itemMargin * 2;
+        const barHeight = GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BAR_HEIGHT;
         
         // Background
-        ctx.fillStyle = '#333333';
-        ctx.fillRect(x + 4, y + this.config.slotSize - 6, barWidth, barHeight);
+        ctx.fillStyle = GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BACKGROUND_COLOR;
+        ctx.fillRect(x + itemMargin, y + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BAR_OFFSET, barWidth, barHeight);
         
         // Durability bar
-        ctx.fillStyle = durabilityPercent > 0.5 ? '#00FF00' : durabilityPercent > 0.25 ? '#FFFF00' : '#FF0000';
-        ctx.fillRect(x + 4, y + this.config.slotSize - 6, barWidth * durabilityPercent, barHeight);
+        const durabilityColor = durabilityPercent > GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.HIGH_THRESHOLD 
+          ? GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.HIGH_COLOR
+          : durabilityPercent > GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.MEDIUM_THRESHOLD 
+            ? GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.MEDIUM_COLOR
+            : GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.LOW_COLOR;
+        ctx.fillStyle = durabilityColor;
+        ctx.fillRect(x + itemMargin, y + this.config.slotSize - GAME_CONSTANTS.UI.INVENTORY.SLOT.DURABILITY.BAR_OFFSET, barWidth * durabilityPercent, barHeight);
       }
     }
   }
 
   private getItemColor(item: Item): string {
     // Base color by type
-    let baseColor: string;
     switch (item.type) {
       case 'weapon':
-        baseColor = '#8B4513'; // Brown
-        break;
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.WEAPON;
       case 'armor':
-        baseColor = '#696969'; // Gray
-        break;
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.ARMOR;
       case 'resource':
-        baseColor = '#228B22'; // Green
-        break;
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.RESOURCE;
       case 'consumable':
-        baseColor = '#4169E1'; // Blue
-        break;
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.CONSUMABLE;
       case 'artifact':
-        baseColor = '#FFD700'; // Gold
-        break;
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.ARTIFACT;
       default:
-        baseColor = '#FFFFFF';
+        return GAME_CONSTANTS.UI.ITEM_TYPE_COLORS.DEFAULT;
     }
-
-    return baseColor;
   }
 
   private getSlotAtPosition(mouseX: number, mouseY: number): number {
@@ -263,17 +264,18 @@ export class InventoryUI {
     const slots = this.inventory.getSlots();
     const rows = Math.ceil(slots.length / this.config.slotsPerRow);
     const panelWidth = this.config.slotsPerRow * (this.config.slotSize + this.config.padding) + this.config.padding;
-    const panelHeight = rows * (this.config.slotSize + this.config.padding) + this.config.padding + 30;
+    const panelHeight = rows * (this.config.slotSize + this.config.padding) + this.config.padding + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT;
 
-    const panelX = (800 - panelWidth) / 2; // Assuming canvas width 800
-    const panelY = (600 - panelHeight) / 2; // Assuming canvas height 600
+    // Use the same positioning as renderFullInventory
+    const panelX = GAME_CONSTANTS.CANVAS.WIDTH - panelWidth - 10;
+    const panelY = 200;
 
     for (let i = 0; i < slots.length; i++) {
       const row = Math.floor(i / this.config.slotsPerRow);
       const col = i % this.config.slotsPerRow;
       
       const x = panelX + this.config.padding + col * (this.config.slotSize + this.config.padding);
-      const y = panelY + 30 + this.config.padding + row * (this.config.slotSize + this.config.padding);
+      const y = panelY + GAME_CONSTANTS.UI.INVENTORY.PANEL.TITLE_HEIGHT + this.config.padding + row * (this.config.slotSize + this.config.padding);
       
       if (mouseX >= x && mouseX <= x + this.config.slotSize &&
           mouseY >= y && mouseY <= y + this.config.slotSize) {

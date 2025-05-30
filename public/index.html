@@ -20,6 +20,7 @@
         display: flex;
         gap: 20px;
         align-items: flex-start;
+        justify-content: center;
       }
       
       #game-container {
@@ -29,31 +30,6 @@
       canvas {
         border: 2px solid #333;
         background-color: #000;
-      }
-      
-      .controls {
-        background-color: #222;
-        padding: 20px;
-        border-radius: 8px;
-        max-width: 300px;
-        border: 1px solid #444;
-      }
-      
-      .controls h3 {
-        margin-top: 0;
-        color: #00FF00;
-        border-bottom: 1px solid #444;
-        padding-bottom: 10px;
-      }
-      
-      .control-group {
-        margin-bottom: 15px;
-      }
-      
-      .control-group strong {
-        color: #FFD700;
-        display: block;
-        margin-bottom: 5px;
       }
       
       .key {
@@ -83,6 +59,23 @@
         font-size: 14px;
         color: #ccc;
       }
+      
+      .help-tooltip {
+        margin-top: 15px;
+        padding: 8px 16px;
+        background-color: rgba(0, 255, 0, 0.1);
+        border: 1px solid #00FF00;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 14px;
+        color: #00FF00;
+        animation: pulse 2s infinite ease-in-out;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
     </style>
   </head>
   <body>
@@ -90,36 +83,11 @@
     
     <div class="game-wrapper">
       <div id="game-container"></div>
-      
-      <div class="controls">
-        <h3>🎮 Controls</h3>
-        
-        <div class="control-group">
-          <strong>Movement:</strong>
-          <span class="key">WASD</span> or <span class="key">Arrow Keys</span>
-        </div>
-        
-        <div class="control-group">
-          <strong>Inventory:</strong>
-          <span class="key">I</span> - Toggle inventory panel
-        </div>
-        
-        <div class="control-group">
-          <strong>Item Collection:</strong>
-          <span class="key">E</span> - Collect nearby items<br>
-          <small>Items are auto-collected when walking over them</small>
-        </div>
-        
-        <div class="control-group">
-          <strong>Hotbar:</strong>
-          <span class="key">1-9, 0</span> - Select hotbar slots
-        </div>
-        
-        <div class="control-group">
-          <strong>Equipment:</strong>
-          Click on weapons/armor in inventory to equip
-        </div>
-      </div>
+    </div>
+    
+    <!-- Tooltip for H button -->
+    <div class="help-tooltip">
+      Press <span class="key">H</span> for controls and help
     </div>
     
     <div style="display: flex; gap: 20px; margin-top: 20px; max-width: 1200px;">

@@ -4,7 +4,12 @@ import { Player } from '../game/entities/Player';
 import { Level } from '../game/levels/Level';
 import { InputManager } from './InputManager';
 import { LootSystem } from '../game/systems/LootSystem';
+import { LootGenerator } from '../game/systems/LootGenerator';
+import { DungeonLootManager } from '../game/systems/DungeonLootManager';
+import { EventHandler } from '../game/systems/EventHandler';
 import { InventoryUI } from '../rendering/ui/InventoryUI';
+import { HelpUI } from '../rendering/ui/HelpUI';
+import { PlayerInfoUI } from '../rendering/ui/PlayerInfoUI';
 
 export class GameEngine {
   private readonly canvas: HTMLCanvasElement;
@@ -13,7 +18,12 @@ export class GameEngine {
   private readonly level: Level;
   private readonly inputManager: InputManager;
   private readonly lootSystem: LootSystem;
+  private readonly lootGenerator: LootGenerator;
+  private readonly dungeonLootManager: DungeonLootManager;
+  private readonly eventHandler: EventHandler;
   private readonly inventoryUI: InventoryUI;
+  private readonly helpUI: HelpUI;
+  private readonly playerInfoUI: PlayerInfoUI;
   private player: Player | null;
   private animationFrameId: number;
   private frameCount: number;
@@ -56,6 +66,20 @@ export class GameEngine {
       slotsPerRow: 6,
       padding: 4
     });
+    
+    this.helpUI = new HelpUI({
+      x: (GAME_CONSTANTS.CANVAS.WIDTH - 400) / 2,
+      y: (GAME_CONSTANTS.CANVAS.HEIGHT - 500) / 2,
+      width: 400,
+      height: 500
+    });
+    
+    this.playerInfoUI = new PlayerInfoUI({
+      x: GAME_CONSTANTS.CANVAS.WIDTH - 190,
+      y: 10,
+      width: 180,
+      height: 180
+    });
     this.player = null;
     this.animationFrameId = 0;
     
@@ -81,11 +105,22 @@ export class GameEngine {
     // Connect inventory UI to player
     this.inventoryUI.setInventory(this.player.getInventory());
     
-    // Set up input event handlers
-    this.setupEventHandlers();
+    // Connect player info UI to player
+    this.playerInfoUI.setPlayer(this.player);
     
-    // Generate some initial loot for testing
-    this.generateTestLoot();
+    // Initialize specialized systems
+    this.lootGenerator = new LootGenerator(this.lootSystem);
+    this.dungeonLootManager = new DungeonLootManager(this.level, this.lootGenerator);
+    this.eventHandler = new EventHandler(
+      this.canvas,
+      this.player,
+      this.lootSystem,
+      this.inventoryUI,
+      this.helpUI
+    );
+    
+    // Generate loot throughout the dungeon
+    this.dungeonLootManager.generateDungeonLoot();
   }
 
   public start(): void {
@@ -96,6 +131,7 @@ export class GameEngine {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
+    this.eventHandler.destroy();
   }
 
   public addGameObject(object: GameObject): void {
@@ -104,6 +140,27 @@ export class GameEngine {
 
   public removeGameObject(object: GameObject): void {
     this.gameObjects.delete(object);
+  }
+
+  /**
+   * Get the loot generator for external access
+   */
+  public getLootGenerator(): LootGenerator {
+    return this.lootGenerator;
+  }
+
+  /**
+   * Get the loot system for external access
+   */
+  public getLootSystem(): LootSystem {
+    return this.lootSystem;
+  }
+
+  /**
+   * Get the dungeon loot manager for external access
+   */
+  public getDungeonLootManager(): DungeonLootManager {
+    return this.dungeonLootManager;
   }
 
   private gameLoop(): void {
@@ -168,11 +225,15 @@ export class GameEngine {
       object.render(this.ctx);
     }
 
-    // Render UI
+    // Render UI components
+    this.playerInfoUI.render(this.ctx);
     this.inventoryUI.render(this.ctx);
     
-    // Render player stats
-    this.renderPlayerStats();
+    // Render help hint button (always visible)
+    this.helpUI.renderHintButton(this.ctx);
+    
+    // Render help UI (only if visible)
+    this.helpUI.render(this.ctx);
 
     // Render debug info
     this.renderDebugInfo();
@@ -188,166 +249,6 @@ export class GameEngine {
     
     // Render FPS counter
     this.ctx.fillText(`FPS: ${this.fps}`, 10, 10);
-    
-    this.ctx.restore();
-  }
-
-  private setupEventHandlers(): void {
-    // Keyboard event handlers
-    document.addEventListener('keydown', (event) => {
-      switch (event.key) {
-        case 'i':
-        case 'I':
-          this.inventoryUI.toggle();
-          break;
-        case 'e':
-        case 'E':
-          this.handleItemCollection();
-          break;
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-        case '0':
-          const slotNumber = event.key === '0' ? 10 : parseInt(event.key);
-          this.inventoryUI.selectHotbarSlot(slotNumber);
-          break;
-      }
-    });
-
-    // Mouse event handlers
-    this.canvas.addEventListener('click', (event) => {
-      const rect = this.canvas.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left;
-      const mouseY = event.clientY - rect.top;
-      
-      this.inventoryUI.handleClick(mouseX, mouseY);
-    });
-  }
-
-  private handleItemCollection(): void {
-    if (!this.player) return;
-
-    const collectedDrops = this.lootSystem.checkItemCollection(
-      this.player.position,
-      this.player.size
-    );
-
-    collectedDrops.forEach(drop => {
-      const success = this.player!.collectItem(drop.getItem(), drop.getQuantity());
-      if (!success) {
-        // If inventory is full, put the item back
-        this.lootSystem.createItemDrop(drop.getItem(), drop.getQuantity(), drop.position);
-      }
-    });
-  }
-
-  private generateTestLoot(): void {
-    if (!this.player) return;
-
-    // Generate some test loot around the player
-    const playerPos = this.player.position;
-    
-    // Generate random loot
-    this.lootSystem.generateRandomLoot(1, {
-      x: playerPos.x + 100,
-      y: playerPos.y + 50
-    });
-    
-    this.lootSystem.generateRandomLoot(2, {
-      x: playerPos.x - 80,
-      y: playerPos.y + 80
-    });
-    
-    // Generate loot from specific tables
-    this.lootSystem.generateLoot('treasure_chest', 3, {
-      x: playerPos.x + 150,
-      y: playerPos.y - 100
-    });
-  }
-
-  private renderPlayerStats(): void {
-    if (!this.player) return;
-
-    this.ctx.save();
-    
-    const stats = this.player.getStats();
-    const equipment = this.player.getInventory().getEquipment();
-    
-    // Set up stats display style
-    this.ctx.font = '12px Arial';
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.textBaseline = 'top';
-    
-    // Render stats background
-    const statsWidth = 180;
-    const statsHeight = 120;
-    const statsX = this.canvas.width - statsWidth - 10;
-    const statsY = 10;
-    
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    this.ctx.fillRect(statsX, statsY, statsWidth, statsHeight);
-    
-    this.ctx.strokeStyle = '#555555';
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeRect(statsX, statsY, statsWidth, statsHeight);
-    
-    // Render stats text
-    let yOffset = statsY + 10;
-    const lineHeight = 14;
-    
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.fillText(`Level: ${stats.level}`, statsX + 10, yOffset);
-    yOffset += lineHeight;
-    
-    this.ctx.fillText(`HP: ${stats.health}/${stats.maxHealth}`, statsX + 10, yOffset);
-    yOffset += lineHeight;
-    
-    this.ctx.fillText(`MP: ${stats.mana}/${stats.maxMana}`, statsX + 10, yOffset);
-    yOffset += lineHeight;
-    
-    this.ctx.fillText(`ATK: ${stats.attack}`, statsX + 10, yOffset);
-    yOffset += lineHeight;
-    
-    this.ctx.fillText(`DEF: ${stats.defense}`, statsX + 10, yOffset);
-    yOffset += lineHeight;
-    
-    this.ctx.fillText(`SPD: ${stats.speed}`, statsX + 10, yOffset);
-    yOffset += lineHeight;
-    
-    this.ctx.fillText(`EXP: ${stats.experience}/${stats.experienceToNext}`, statsX + 10, yOffset);
-    
-    // Render health bar
-    const barWidth = 100;
-    const barHeight = 8;
-    const healthBarX = statsX + 10;
-    const healthBarY = statsY + statsHeight - 30;
-    
-    // Health bar background
-    this.ctx.fillStyle = '#333333';
-    this.ctx.fillRect(healthBarX, healthBarY, barWidth, barHeight);
-    
-    // Health bar fill
-    const healthPercent = stats.health / stats.maxHealth;
-    this.ctx.fillStyle = healthPercent > 0.5 ? '#00FF00' : healthPercent > 0.25 ? '#FFFF00' : '#FF0000';
-    this.ctx.fillRect(healthBarX, healthBarY, barWidth * healthPercent, barHeight);
-    
-    // Mana bar
-    const manaBarY = healthBarY + barHeight + 4;
-    
-    // Mana bar background
-    this.ctx.fillStyle = '#333333';
-    this.ctx.fillRect(healthBarX, manaBarY, barWidth, barHeight);
-    
-    // Mana bar fill
-    const manaPercent = stats.mana / stats.maxMana;
-    this.ctx.fillStyle = '#0080FF';
-    this.ctx.fillRect(healthBarX, manaBarY, barWidth * manaPercent, barHeight);
     
     this.ctx.restore();
   }
