@@ -20,10 +20,8 @@ module.exports = (env, argv) => {
       extensions: ['.tsx', '.ts', '.js'],
     },
     output: {
-      filename: isProduction ? '[name].[contenthash].js' : 'bundle.js',
+      filename: 'bundle.js',
       path: path.resolve(__dirname, 'dist'),
-      clean: true,
-      publicPath: '/',
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -45,24 +43,11 @@ module.exports = (env, argv) => {
     ],
     devServer: {
       static: {
-        directory: path.join(__dirname, 'public'),
+        directory: path.join(__dirname, 'dist'),
       },
       compress: true,
       port: 3000,
       hot: true,
     },
-    optimization: {
-      splitChunks: isProduction ? {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-        },
-      } : false,
-    },
   };
-};
 };

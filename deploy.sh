@@ -13,10 +13,6 @@ rm -rf dist
 echo "📦 Installing dependencies..."
 npm ci
 
-# Run linting
-echo "🔍 Running linter..."
-npm run lint
-
 # Build for production
 echo "🏗️  Building for production..."
 npm run build

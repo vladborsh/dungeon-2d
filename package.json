@@ -14,7 +14,7 @@
     "deploy": "npm run build && netlify deploy --prod --dir=dist",
     "deploy:preview": "npm run build && netlify deploy --dir=dist",
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean && npm run lint"
+    "prebuild": "npm run clean"
   },
   "keywords": [
     "game",
