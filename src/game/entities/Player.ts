@@ -207,8 +207,8 @@ export class Player implements GameObject {
         const p = pixel as keyof ColorMap;
         if (p !== ' ') {
           spriteCtx.fillStyle = colors[p];
-          // Draw 2x2 pixel blocks for better visibility
-          spriteCtx.fillRect(x * 2, y * 2, 2, 2);
+          // Draw 3x3 pixel blocks for better visibility
+          spriteCtx.fillRect(x * 3, y * 3, 3, 3);
         }
       });
     });

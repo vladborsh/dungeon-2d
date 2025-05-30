@@ -66,7 +66,7 @@ export class Goblin extends Enemy {
         const p = pixel as keyof ColorMap;
         if (p !== ' ') {
           ctx.fillStyle = colors[p];
-          ctx.fillRect(x * 2, y * 2, 2, 2);
+          ctx.fillRect(x * 3, y * 3, 3, 3);
         }
       });
     });
@@ -135,7 +135,7 @@ export class Skeleton extends Enemy {
         const p = pixel as keyof ColorMap;
         if (p !== ' ') {
           ctx.fillStyle = colors[p];
-          ctx.fillRect(x * 2, y * 2, 2, 2);
+          ctx.fillRect(x * 3, y * 3, 3, 3);
         }
       });
     });
@@ -201,7 +201,7 @@ export class Spider extends Enemy {
         const p = pixel as keyof ColorMap;
         if (p !== ' ') {
           ctx.fillStyle = colors[p];
-          ctx.fillRect(x * 2, y * 2, 2, 2);
+          ctx.fillRect(x * 3, y * 3, 3, 3);
         }
       });
     });
@@ -274,7 +274,7 @@ export class Troll extends Enemy {
         const p = pixel as keyof ColorMap;
         if (p !== ' ') {
           ctx.fillStyle = colors[p];
-          ctx.fillRect(x * 2, y * 2, 2, 2);
+          ctx.fillRect(x * 3, y * 3, 3, 3);
         }
       });
     });

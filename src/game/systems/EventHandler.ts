@@ -2,6 +2,7 @@ import type { Player } from '../entities/Player';
 import type { LootSystem } from './LootSystem';
 import type { InventoryUI } from '../../rendering/ui/InventoryUI';
 import type { HelpUI } from '../../rendering/ui/HelpUI';
+import type { Camera } from '../../core/Camera';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
 
 /**
@@ -13,19 +14,22 @@ export class EventHandler {
   private readonly lootSystem: LootSystem;
   private readonly inventoryUI: InventoryUI;
   private readonly helpUI: HelpUI;
+  private readonly camera: Camera;
 
   public constructor(
     canvas: HTMLCanvasElement,
     player: Player,
     lootSystem: LootSystem,
     inventoryUI: InventoryUI,
-    helpUI: HelpUI
+    helpUI: HelpUI,
+    camera: Camera
   ) {
     this.canvas = canvas;
     this.player = player;
     this.lootSystem = lootSystem;
     this.inventoryUI = inventoryUI;
     this.helpUI = helpUI;
+    this.camera = camera;
     
     this.setupEventHandlers();
   }
@@ -168,8 +172,12 @@ export class EventHandler {
    * Handle world click interactions
    */
   private handleWorldClick(mouseX: number, mouseY: number): void {
-    // Handle clicking on game world objects
+    // Convert screen coordinates to world coordinates using camera
+    const worldPos = this.camera.screenToWorld({ x: mouseX, y: mouseY });
+    
+    // Handle clicking on game world objects using world coordinates
     // This can be expanded for interacting with NPCs, objects, etc.
+    // For now, we could use this for pathfinding or item interaction
   }
 
   /**

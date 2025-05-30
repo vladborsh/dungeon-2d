@@ -20,8 +20,9 @@ export class DungeonLootManager {
    * Generate loot throughout the dungeon in rooms and strategic locations
    */
   public generateDungeonLoot(): void {
-    const mazeWidth = Math.floor(GAME_CONSTANTS.CANVAS.WIDTH / GAME_CONSTANTS.TILE_SIZE);
-    const mazeHeight = Math.floor(GAME_CONSTANTS.CANVAS.HEIGHT / GAME_CONSTANTS.TILE_SIZE);
+    // Use larger maze dimensions (1.5x canvas size) to match Level generation
+    const mazeWidth = Math.floor((GAME_CONSTANTS.CANVAS.WIDTH * 1.5) / GAME_CONSTANTS.TILE_SIZE);
+    const mazeHeight = Math.floor((GAME_CONSTANTS.CANVAS.HEIGHT * 1.5) / GAME_CONSTANTS.TILE_SIZE);
     
     // Generate loot in rooms
     this.generateRoomLoot(mazeWidth, mazeHeight);

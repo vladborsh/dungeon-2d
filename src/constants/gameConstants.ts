@@ -14,9 +14,12 @@ export const GAME_CONSTANTS = {
     ROOM: '#222222',
     ROOM_WALL: '#444444',
   },
-  TILE_SIZE: 24, // Smaller tiles for a more intricate maze
+  TILE_SIZE: 36, // Larger tiles for better visibility
+  CAMERA: {
+    SMOOTHING_FACTOR: 0.1, // How smoothly the camera follows the player (0 = instant, 1 = no movement)
+  },
   PLAYER: {
-    SIZE: 16,
+    SIZE: 24,
     SPEED: 3.5,
     MAX_SPEED: 4, // Maximum velocity
     ACCELERATION: 0.5, // How quickly the player accelerates
@@ -50,11 +53,11 @@ export const GAME_CONSTANTS = {
     DROP_CHANCE: 1.0, // 100% chance for loot generation to guarantee dungeon loot appears
     DROP: {
       SIZE: {
-        WIDTH: 12,
-        HEIGHT: 12,
+        WIDTH: 18,
+        HEIGHT: 18,
       },
       LIFETIME: 30000, // 30 seconds in milliseconds
-      COLLECTION_RADIUS: 24,
+      COLLECTION_RADIUS: 36,
       ANIMATION: {
         BOB_SPEED: 0.1,
         BOB_OFFSET_LIMIT: 2,
@@ -80,11 +83,11 @@ export const GAME_CONSTANTS = {
     },
   },
   LOOT_GENERATION: {
-    POSITION_SPREAD: 32,
+    POSITION_SPREAD: 48,
     ROOM_LOOT_CHANCE: 0.8, // High chance for room loot
     PATH_LOOT_PERCENTAGE: 0.12, // 12% of path cells get loot
     INTERSECTION_BASE_CHANCE: 0.3, // Base chance for intersection loot
-    END_BONUS_RADIUS: 128, // Radius for end area bonus loot
+    END_BONUS_RADIUS: 192, // Radius for end area bonus loot
     END_BONUS_COUNT: 8, // Number of bonus items near end
   },
   ITEM_GENERATION: {
@@ -266,45 +269,45 @@ export const GAME_CONSTANTS = {
   },
   ENEMIES: {
     GOBLIN: {
-      SIZE: 16,
+      SIZE: 24,
       HEALTH: 50,
       DAMAGE: 15,
       SPEED: 1.5,
-      DETECTION_RADIUS: 80,
-      ATTACK_RANGE: 20,
+      DETECTION_RADIUS: 120,
+      ATTACK_RANGE: 30,
       ATTACK_COOLDOWN: 1000, // milliseconds
       COLOR: '#8B4513',
       EXPERIENCE_REWARD: 25,
     },
     SKELETON: {
-      SIZE: 18,
+      SIZE: 27,
       HEALTH: 75,
       DAMAGE: 20,
       SPEED: 2.0,
-      DETECTION_RADIUS: 100,
-      ATTACK_RANGE: 24,
+      DETECTION_RADIUS: 150,
+      ATTACK_RANGE: 36,
       ATTACK_COOLDOWN: 800,
       COLOR: '#F5F5DC',
       EXPERIENCE_REWARD: 35,
     },
     SPIDER: {
-      SIZE: 14,
+      SIZE: 21,
       HEALTH: 30,
       DAMAGE: 10,
       SPEED: 2.5,
-      DETECTION_RADIUS: 60,
-      ATTACK_RANGE: 16,
+      DETECTION_RADIUS: 90,
+      ATTACK_RANGE: 24,
       ATTACK_COOLDOWN: 600,
       COLOR: '#4B0082',
       EXPERIENCE_REWARD: 15,
     },
     TROLL: {
-      SIZE: 24,
+      SIZE: 36,
       HEALTH: 150,
       DAMAGE: 35,
       SPEED: 0.8,
-      DETECTION_RADIUS: 120,
-      ATTACK_RANGE: 30,
+      DETECTION_RADIUS: 180,
+      ATTACK_RANGE: 45,
       ATTACK_COOLDOWN: 1500,
       COLOR: '#556B2F',
       EXPERIENCE_REWARD: 75,
@@ -314,18 +317,18 @@ export const GAME_CONSTANTS = {
       PATH_CHANCE: 0.2, // 20% chance for enemies on paths
       MAX_ENEMIES_PER_ROOM: 3,
       MAX_ENEMIES_PER_PATH_SECTION: 1,
-      MIN_DISTANCE_FROM_START: 150, // pixels
+      MIN_DISTANCE_FROM_START: 225, // pixels
       RESPAWN_TIME: 30000, // 30 seconds
     },
     AI: {
       PATHFINDING: {
-        MAX_SEARCH_DISTANCE: 200,
+        MAX_SEARCH_DISTANCE: 300,
         UPDATE_INTERVAL: 500, // milliseconds
       },
       PATROL: {
         POINT_COUNT: 3,
         WAIT_TIME: 2000, // milliseconds
-        PATROL_RADIUS: 100,
+        PATROL_RADIUS: 150,
       },
       RANDOM: {
         DIRECTION_CHANGE_INTERVAL: 2000, // milliseconds
@@ -335,8 +338,8 @@ export const GAME_CONSTANTS = {
     RENDERING: {
       SHADOW: {
         COLOR: 'rgba(0, 0, 0, 0.3)',
-        OFFSET_X: 2,
-        OFFSET_Y: 2,
+        OFFSET_X: 3,
+        OFFSET_Y: 3,
         SCALE_X: 0.8,
         SCALE_Y: 0.4,
       },

@@ -3,6 +3,7 @@ import type { GameObject } from '../interfaces/gameInterfaces';
 import { Player } from '../game/entities/Player';
 import { Level } from '../game/levels/Level';
 import { InputManager } from './InputManager';
+import { Camera } from './Camera';
 import { LootSystem } from '../game/systems/LootSystem';
 import { LootGenerator } from '../game/systems/LootGenerator';
 import { DungeonLootManager } from '../game/systems/DungeonLootManager';
@@ -19,6 +20,7 @@ export class GameEngine {
   private readonly gameObjects: Set<GameObject>;
   private readonly level: Level;
   private readonly inputManager: InputManager;
+  private readonly camera: Camera;
   private readonly lootSystem: LootSystem;
   private readonly lootGenerator: LootGenerator;
   private readonly dungeonLootManager: DungeonLootManager;
@@ -63,6 +65,7 @@ export class GameEngine {
     this.gameObjects = new Set();
     this.level = new Level();
     this.inputManager = new InputManager();
+    this.camera = new Camera();
     this.lootSystem = new LootSystem();
     this.particleSystem = new ParticleSystem();
     this.inventoryUI = new InventoryUI({
@@ -120,7 +123,8 @@ export class GameEngine {
       this.player,
       this.lootSystem,
       this.inventoryUI,
-      this.helpUI
+      this.helpUI,
+      this.camera
     );
     
     // Generate loot throughout the dungeon
@@ -147,6 +151,13 @@ export class GameEngine {
 
   public removeGameObject(object: GameObject): void {
     this.gameObjects.delete(object);
+  }
+
+  /**
+   * Get the camera for external access
+   */
+  public getCamera(): Camera {
+    return this.camera;
   }
 
   /**
@@ -243,6 +254,15 @@ export class GameEngine {
       object.update();
     }
     
+    // Update camera to follow player
+    if (this.player) {
+      const playerCenter = {
+        x: this.player.position.x + this.player.size.width / 2,
+        y: this.player.position.y + this.player.size.height / 2
+      };
+      this.camera.update(playerCenter);
+    }
+    
     // Update enemy system
     if (this.player) {
       this.enemyManager.update(this.player);
@@ -286,6 +306,9 @@ export class GameEngine {
     this.ctx.fillStyle = GAME_CONSTANTS.COLORS.BACKGROUND;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Apply camera transformation for world objects
+    this.camera.apply(this.ctx);
+
     // Render level
     this.level.render(this.ctx);
 
@@ -303,14 +326,17 @@ export class GameEngine {
       object.render(this.ctx);
     }
 
-    // Render UI components
+    // Restore camera transformation for UI elements
+    this.camera.restore(this.ctx);
+
+    // Render UI components (fixed to screen)
     this.playerInfoUI.render();
     this.inventoryUI.render();
     
-    // Render help hint button (always visible)
+    // Render help hint button (always visible, fixed to screen)
     this.helpUI.renderHintButton(this.ctx);
     
-    // Render help UI (only if visible)
+    // Render help UI (only if visible, fixed to screen)
     this.helpUI.render(this.ctx);
   }
 }

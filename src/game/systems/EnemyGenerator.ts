@@ -36,8 +36,9 @@ export class EnemyGenerator {
 
   public generateDungeonEnemies(): Enemy[] {
     const enemies: Enemy[] = [];
-    const mazeWidth = Math.floor(GAME_CONSTANTS.CANVAS.WIDTH / GAME_CONSTANTS.TILE_SIZE);
-    const mazeHeight = Math.floor(GAME_CONSTANTS.CANVAS.HEIGHT / GAME_CONSTANTS.TILE_SIZE);
+    // Use the same larger maze dimensions as Level class
+    const mazeWidth = Math.floor((GAME_CONSTANTS.CANVAS.WIDTH * 1.5) / GAME_CONSTANTS.TILE_SIZE);
+    const mazeHeight = Math.floor((GAME_CONSTANTS.CANVAS.HEIGHT * 1.5) / GAME_CONSTANTS.TILE_SIZE);
 
     // Generate enemies in rooms
     const roomEnemies = this.generateRoomEnemies(mazeWidth, mazeHeight);
