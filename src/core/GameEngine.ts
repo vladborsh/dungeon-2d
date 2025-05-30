@@ -10,6 +10,7 @@ import { EventHandler } from '../game/systems/EventHandler';
 import { InventoryUI } from '../rendering/ui/InventoryUI';
 import { HelpUI } from '../rendering/ui/HelpUI';
 import { PlayerInfoUI } from '../rendering/ui/PlayerInfoUI';
+import { ParticleSystem } from '../rendering/effects/ParticleSystem';
 
 export class GameEngine {
   private readonly canvas: HTMLCanvasElement;
@@ -24,6 +25,7 @@ export class GameEngine {
   private readonly inventoryUI: InventoryUI;
   private readonly helpUI: HelpUI;
   private readonly playerInfoUI: PlayerInfoUI;
+  private readonly particleSystem: ParticleSystem;
   private player: Player | null;
   private animationFrameId: number;
   private frameCount: number;
@@ -33,6 +35,7 @@ export class GameEngine {
   private lastFrameTime: number;
   private readonly targetFPS: number;
   private readonly frameTime: number;
+  private previousPlayerPosition: { x: number; y: number } | null;
 
   public constructor() {
     this.canvas = document.createElement('canvas');
@@ -59,6 +62,7 @@ export class GameEngine {
     this.level = new Level();
     this.inputManager = new InputManager();
     this.lootSystem = new LootSystem();
+    this.particleSystem = new ParticleSystem();
     this.inventoryUI = new InventoryUI({
       x: 0,
       y: 0,
@@ -82,6 +86,7 @@ export class GameEngine {
     });
     this.player = null;
     this.animationFrameId = 0;
+    this.previousPlayerPosition = null;
     
     // Initialize FPS tracking
     this.frameCount = 0;
@@ -163,6 +168,42 @@ export class GameEngine {
     return this.dungeonLootManager;
   }
 
+  /**
+   * Get the particle system for external access
+   */
+  public getParticleSystem(): ParticleSystem {
+    return this.particleSystem;
+  }
+
+  private generatePlayerTrail(): void {
+    if (!this.player) return;
+
+    const currentPosition = {
+      x: this.player.position.x + this.player.size.width / 2,
+      y: this.player.position.y + this.player.size.height / 2
+    };
+
+    // Check if player is moving
+    if (this.previousPlayerPosition) {
+      const deltaX = currentPosition.x - this.previousPlayerPosition.x;
+      const deltaY = currentPosition.y - this.previousPlayerPosition.y;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+      // Only generate trail if player is moving fast enough
+      if (distance > 1) {
+        // Generate multiple trail particles per frame when moving
+        for (let i = 0; i < GAME_CONSTANTS.PARTICLES.TRAIL.SPAWN_RATE; i++) {
+          this.particleSystem.createTrailParticle({
+            x: currentPosition.x + (Math.random() - 0.5) * this.player.size.width,
+            y: currentPosition.y + (Math.random() - 0.5) * this.player.size.height
+          });
+        }
+      }
+    }
+
+    this.previousPlayerPosition = { ...currentPosition };
+  }
+
   private gameLoop(): void {
     const currentTime = performance.now();
     const deltaTime = currentTime - this.lastFrameTime;
@@ -193,6 +234,14 @@ export class GameEngine {
       object.update();
     }
     
+    // Update particle system
+    this.particleSystem.update();
+    
+    // Generate trail particles behind player
+    if (this.player) {
+      this.generatePlayerTrail();
+    }
+    
     // Update loot system
     this.lootSystem.updateItemDrops();
     
@@ -204,6 +253,15 @@ export class GameEngine {
       );
 
       collectedDrops.forEach(drop => {
+        // Create explosion particles when item is collected
+        this.particleSystem.createExplosionParticles(
+          {
+            x: drop.position.x + drop.size.width / 2,
+            y: drop.position.y + drop.size.height / 2
+          },
+          GAME_CONSTANTS.PARTICLES.EXPLOSION.COUNT
+        );
+        
         this.player!.collectItem(drop.getItem(), drop.getQuantity());
       });
     }
@@ -219,6 +277,9 @@ export class GameEngine {
 
     // Render item drops
     this.lootSystem.renderItemDrops(this.ctx);
+
+    // Render particles (behind game objects)
+    this.particleSystem.render(this.ctx);
 
     // Render all game objects
     for (const object of this.gameObjects) {
@@ -249,6 +310,9 @@ export class GameEngine {
     
     // Render FPS counter
     this.ctx.fillText(`FPS: ${this.fps}`, 10, 10);
+    
+    // Render particle count
+    this.ctx.fillText(`Particles: ${this.particleSystem.getParticleCount()}`, 10, 28);
     
     this.ctx.restore();
   }

@@ -236,4 +236,32 @@ export const GAME_CONSTANTS = {
       MANA_COLOR: '#0080FF',
     },
   },
+  PARTICLES: {
+    TRAIL: {
+      SPAWN_RATE: 3, // Particles per frame when moving
+      LIFETIME: 30, // Frames
+      SIZE: {
+        MIN: 0.5,
+        MAX: 2,
+      },
+      COLOR: '#FFD700',
+      ALPHA: 0.8,
+      DECAY: 0.03,
+    },
+    EXPLOSION: {
+      COUNT: 8,
+      LIFETIME: 45, // Frames
+      SIZE: {
+        MIN: 2,
+        MAX: 6,
+      },
+      COLORS: ['#FFD700', '#FF6B35', '#F7931E', '#FFEB3B', '#FF9800', '#FFC107'],
+      SPEED: {
+        MIN: 2,
+        MAX: 6,
+      },
+      GRAVITY: 0.1,
+      DECAY: 0.02,
+    },
+  },
 } as const;
