@@ -98,11 +98,15 @@ export abstract class Enemy implements GameObject {
     // Set shadow properties
     ctx.fillStyle = shadowConfig.COLOR;
     
-    // Calculate shadow position and size
-    const shadowX = this.position.x + shadowConfig.OFFSET_X;
-    const shadowY = this.position.y + this.size.height + shadowConfig.OFFSET_Y;
-    const shadowWidth = this.size.width * shadowConfig.SCALE_X;
-    const shadowHeight = this.size.height * shadowConfig.SCALE_Y;
+    // Determine shadow size based on enemy size
+    const shadowSize = this.size.width <= 24 ? 'SMALL' : 
+                      this.size.width <= 30 ? 'MEDIUM' : 'LARGE';
+    
+    // Calculate shadow position and size using the appropriate scale
+    const shadowX = this.position.x + shadowConfig.OFFSET[shadowSize].X;
+    const shadowY = this.position.y + this.size.height + shadowConfig.OFFSET.SMALL.Y;
+    const shadowWidth = this.size.width * shadowConfig.SCALE[shadowSize].X;
+    const shadowHeight = this.size.height * shadowConfig.SCALE[shadowSize].Y;
     
     // Draw elliptical shadow
     ctx.beginPath();

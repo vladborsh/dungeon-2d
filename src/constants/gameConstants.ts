@@ -20,8 +20,8 @@ export const GAME_CONSTANTS = {
   },
   PLAYER: {
     SIZE: 24,
-    SPEED: 3.5,
-    MAX_SPEED: 4, // Maximum velocity
+    SPEED: 4,
+    MAX_SPEED: 6, // Maximum velocity
     ACCELERATION: 0.5, // How quickly the player accelerates
     FRICTION: 0.3, // How quickly the player slows down
     INITIAL_HEALTH: 100,
@@ -338,10 +338,34 @@ export const GAME_CONSTANTS = {
     RENDERING: {
       SHADOW: {
         COLOR: 'rgba(0, 0, 0, 0.3)',
-        OFFSET_X: 3,
-        OFFSET_Y: 3,
-        SCALE_X: 0.8,
-        SCALE_Y: 0.4,
+        OFFSET: {
+          SMALL: {
+            X: 4,
+            Y: 0,
+          },
+          MEDIUM: {
+            X: 6,
+            Y: 6,
+          },
+          LARGE: {
+            X: 10,
+            Y: 10,
+          },
+        },
+        SCALE: {
+          SMALL: {
+            X: 0.6,
+            Y: 0.3,
+          },
+          MEDIUM: {
+            X: 0.7,
+            Y: 0.35,
+          },
+          LARGE: {
+            X: 0.8,
+            Y: 0.4,
+          },
+        },
       },
     },
   },

@@ -13,6 +13,7 @@ import { InventoryUI } from '../rendering/ui/InventoryUI';
 import { HelpUI } from '../rendering/ui/HelpUI';
 import { PlayerInfoUI } from '../rendering/ui/PlayerInfoUI';
 import { ParticleSystem } from '../rendering/effects/ParticleSystem';
+import { PlayerTrailSystem } from '../game/systems/PlayerTrailSystem';
 
 export class GameEngine {
   private readonly canvas: HTMLCanvasElement;
@@ -31,6 +32,7 @@ export class GameEngine {
   private readonly playerInfoUI: PlayerInfoUI;
   private readonly particleSystem: ParticleSystem;
   private player: Player | null;
+  private readonly playerTrailSystem: PlayerTrailSystem;
   private animationFrameId: number;
   private frameCount: number;
   private fps: number;
@@ -39,7 +41,6 @@ export class GameEngine {
   private lastFrameTime: number;
   private readonly targetFPS: number;
   private readonly frameTime: number;
-  private previousPlayerPosition: { x: number; y: number } | null;
 
   public constructor() {
     this.canvas = document.createElement('canvas');
@@ -87,7 +88,6 @@ export class GameEngine {
     });
     this.player = null;
     this.animationFrameId = 0;
-    this.previousPlayerPosition = null;
     
     // Initialize FPS tracking
     this.frameCount = 0;
@@ -107,6 +107,9 @@ export class GameEngine {
     this.player.setInputManager(this.inputManager);
     this.player.setLevel(this.level);
     this.addGameObject(this.player);
+    
+    // Initialize player trail system
+    this.playerTrailSystem = new PlayerTrailSystem(this.player, this.particleSystem);
     
     // Connect inventory UI to player
     this.inventoryUI.setInventory(this.player.getInventory());
@@ -195,35 +198,6 @@ export class GameEngine {
     return this.particleSystem;
   }
 
-  private generatePlayerTrail(): void {
-    if (!this.player) return;
-
-    const currentPosition = {
-      x: this.player.position.x + this.player.size.width / 2,
-      y: this.player.position.y + this.player.size.height / 2
-    };
-
-    // Check if player is moving
-    if (this.previousPlayerPosition) {
-      const deltaX = currentPosition.x - this.previousPlayerPosition.x;
-      const deltaY = currentPosition.y - this.previousPlayerPosition.y;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-      // Only generate trail if player is moving fast enough
-      if (distance > 1) {
-        // Generate multiple trail particles per frame when moving
-        for (let i = 0; i < GAME_CONSTANTS.PARTICLES.TRAIL.SPAWN_RATE; i++) {
-          this.particleSystem.createTrailParticle({
-            x: currentPosition.x + (Math.random() - 0.5) * this.player.size.width,
-            y: currentPosition.y + (Math.random() - 0.5) * this.player.size.height
-          });
-        }
-      }
-    }
-
-    this.previousPlayerPosition = { ...currentPosition };
-  }
-
   private gameLoop(): void {
     const currentTime = performance.now();
     const deltaTime = currentTime - this.lastFrameTime;
@@ -271,9 +245,9 @@ export class GameEngine {
     // Update particle system
     this.particleSystem.update();
     
-    // Generate trail particles behind player
+    // Update player trail system
     if (this.player) {
-      this.generatePlayerTrail();
+      this.playerTrailSystem.update();
     }
     
     // Update loot system
@@ -309,22 +283,25 @@ export class GameEngine {
     // Apply camera transformation for world objects
     this.camera.apply(this.ctx);
 
-    // Render level
+    // Render level floor and objects (but not walls)
     this.level.render(this.ctx);
 
     // Render particles (behind game objects)
     this.particleSystem.render(this.ctx);
 
-    // Render item drops (in front of enemies)
+    // Render item drops (in front of floor)
     this.lootSystem.renderItemDrops(this.ctx);
 
-    // Render enemies (behind collectibles)
+    // Render enemies (in front of drops)
     this.enemyManager.render(this.ctx);
 
-    // Render all game objects (player in front of everything)
+    // Render all game objects (player in front of everything except walls)
     for (const object of this.gameObjects) {
       object.render(this.ctx);
     }
+
+    // Render walls last so they appear in front of everything
+    this.level.renderWalls(this.ctx);
 
     // Restore camera transformation for UI elements
     this.camera.restore(this.ctx);

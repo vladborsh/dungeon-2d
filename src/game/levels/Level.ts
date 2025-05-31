@@ -8,10 +8,9 @@ export class Level {
   private readonly maze: Cell[][];
   private readonly wallSprite: Sprite;
   private readonly pathSprite: Sprite;
-  private readonly startSprite: Sprite;
-  private readonly endSprite: Sprite;
   private readonly roomSprite: Sprite;
   private readonly roomWallSprite: Sprite;
+  private readonly wallShadowSprite: Sprite;
 
   public constructor() {
     // Make maze bigger than canvas - 1.5x larger for more exploration space
@@ -23,13 +22,55 @@ export class Level {
 
     this.wallSprite = this.createSprite(GAME_CONSTANTS.COLORS.WALL);
     this.pathSprite = this.createSprite(GAME_CONSTANTS.COLORS.FLOOR);
-    this.startSprite = this.createSprite('#00FF00'); // Green for start
-    this.endSprite = this.createSprite('#FF0000');   // Red for end
     this.roomSprite = this.createSprite(GAME_CONSTANTS.COLORS.ROOM);
     this.roomWallSprite = this.createSprite(GAME_CONSTANTS.COLORS.ROOM_WALL);
+    this.wallShadowSprite = this.createShadowSprite();
   }
 
   public render(ctx: CanvasRenderingContext2D): void {
+    this.renderFloorAndObjects(ctx);
+  }
+
+  public renderWalls(ctx: CanvasRenderingContext2D): void {
+    const tileSize = GAME_CONSTANTS.TILE_SIZE;
+    const shadowConfig = GAME_CONSTANTS.ENEMIES.RENDERING.SHADOW;
+    const shadowOffsetX = shadowConfig.OFFSET.LARGE.X;
+    const shadowOffsetY = shadowConfig.OFFSET.LARGE.Y;
+    const scaleX = shadowConfig.SCALE.LARGE.X;
+    const scaleY = shadowConfig.SCALE.LARGE.Y;
+
+    // First loop: render all shadows
+    for (let y = 0; y < this.maze.length; y++) {
+      for (let x = 0; x < this.maze[y].length; x++) {
+        const cell = this.maze[y][x];
+        if (cell.type === CellType.Wall || cell.type === CellType.RoomWall) {
+          const screenX = x * tileSize;
+          const screenY = y * tileSize;
+          const shadowX = screenX + shadowOffsetX - (tileSize * scaleX / 2);
+          const shadowY = screenY + shadowOffsetY - (tileSize * scaleY / 2);
+          this.wallShadowSprite.render(ctx, shadowX, shadowY);
+        }
+      }
+    }
+
+    // Second loop: render all walls
+    for (let y = 0; y < this.maze.length; y++) {
+      for (let x = 0; x < this.maze[y].length; x++) {
+        const cell = this.maze[y][x];
+        if (cell.type === CellType.Wall || cell.type === CellType.RoomWall) {
+          const screenX = x * tileSize;
+          const screenY = y * tileSize;
+          if (cell.type === CellType.Wall) {
+            this.wallSprite.render(ctx, screenX, screenY);
+          } else {
+            this.roomWallSprite.render(ctx, screenX, screenY);
+          }
+        }
+      }
+    }
+  }
+
+  public renderFloorAndObjects(ctx: CanvasRenderingContext2D): void {
     const tileSize = GAME_CONSTANTS.TILE_SIZE;
 
     for (let y = 0; y < this.maze.length; y++) {
@@ -39,23 +80,13 @@ export class Level {
         const screenY = y * tileSize;
 
         switch (cell.type) {
-          case CellType.Wall:
-            this.wallSprite.render(ctx, screenX, screenY);
-            break;
           case CellType.Path:
-            this.pathSprite.render(ctx, screenX, screenY);
-            break;
           case CellType.Start:
-            this.startSprite.render(ctx, screenX, screenY);
-            break;
           case CellType.End:
-            this.endSprite.render(ctx, screenX, screenY);
+            this.pathSprite.render(ctx, screenX, screenY);
             break;
           case CellType.Room:
             this.roomSprite.render(ctx, screenX, screenY);
-            break;
-          case CellType.RoomWall:
-            this.roomWallSprite.render(ctx, screenX, screenY);
             break;
         }
       }
@@ -137,6 +168,24 @@ export class Level {
     const spriteCtx = sprite.context;
     spriteCtx.fillStyle = color;
     spriteCtx.fillRect(0, 0, GAME_CONSTANTS.TILE_SIZE, GAME_CONSTANTS.TILE_SIZE);
+
+    return sprite;
+  }
+
+  private createShadowSprite(): Sprite {
+    // Create a larger sprite for the shadow based on medium scaling factors
+    const scaleX = GAME_CONSTANTS.ENEMIES.RENDERING.SHADOW.SCALE.MEDIUM.X;
+    const scaleY = GAME_CONSTANTS.ENEMIES.RENDERING.SHADOW.SCALE.MEDIUM.Y;
+    const tileSize = GAME_CONSTANTS.TILE_SIZE;
+    
+    const sprite = new Sprite({
+      width: tileSize, 
+      height: tileSize, 
+    });
+
+    const spriteCtx = sprite.context;
+    spriteCtx.fillStyle = GAME_CONSTANTS.ENEMIES.RENDERING.SHADOW.COLOR;
+    spriteCtx.fillRect(0, 0, sprite.context.canvas.width, sprite.context.canvas.height);
 
     return sprite;
   }
