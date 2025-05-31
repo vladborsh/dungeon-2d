@@ -11,7 +11,7 @@ import { EnemyManager } from '../game/systems/EnemyManager';
 import { EventHandler } from '../game/systems/EventHandler';
 import { InventoryUI } from '../rendering/ui/InventoryUI';
 import { HelpUI } from '../rendering/ui/HelpUI';
-import { PlayerInfoUI } from '../rendering/ui/PlayerInfoUI';
+import { CanvasOverlayUI } from '../rendering/ui/CanvasOverlayUI';
 import { ParticleSystem } from '../rendering/effects/ParticleSystem';
 import { PlayerTrailSystem } from '../game/systems/PlayerTrailSystem';
 
@@ -29,7 +29,7 @@ export class GameEngine {
   private readonly eventHandler: EventHandler;
   private readonly inventoryUI: InventoryUI;
   private readonly helpUI: HelpUI;
-  private readonly playerInfoUI: PlayerInfoUI;
+  private readonly canvasOverlayUI: CanvasOverlayUI;
   private readonly particleSystem: ParticleSystem;
   private player: Player | null;
   private readonly playerTrailSystem: PlayerTrailSystem;
@@ -70,7 +70,6 @@ export class GameEngine {
     this.lootSystem = new LootSystem();
     this.particleSystem = new ParticleSystem();
     this.inventoryUI = new InventoryUI({
-      containerId: 'inventory-container',
       slotSize: 32,
       slotsPerRow: 6,
       padding: 4
@@ -83,8 +82,10 @@ export class GameEngine {
       height: 500
     });
     
-    this.playerInfoUI = new PlayerInfoUI({
-      containerId: 'player-info-panel'
+    this.canvasOverlayUI = new CanvasOverlayUI({
+      width: 200,
+      height: 200,
+      padding: 10
     });
     this.player = null;
     this.animationFrameId = 0;
@@ -115,7 +116,7 @@ export class GameEngine {
     this.inventoryUI.setInventory(this.player.getInventory());
     
     // Connect player info UI to player
-    this.playerInfoUI.setPlayer(this.player);
+    this.canvasOverlayUI.setPlayer(this.player);
     
     // Initialize specialized systems
     this.lootGenerator = new LootGenerator(this.lootSystem);
@@ -307,8 +308,8 @@ export class GameEngine {
     this.camera.restore(this.ctx);
 
     // Render UI components (fixed to screen)
-    this.playerInfoUI.render();
-    this.inventoryUI.render();
+    this.canvasOverlayUI.render(this.ctx);
+    this.inventoryUI.render(this.ctx);
     
     // Render help hint button (always visible, fixed to screen)
     this.helpUI.renderHintButton(this.ctx);
