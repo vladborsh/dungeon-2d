@@ -89,8 +89,8 @@ export class LootGenerator {
         const item = ItemDatabase.getItem(itemData.itemId);
         if (item) {
           const dropPosition: Position = {
-            x: position.x + (Math.random() - 0.5) * GAME_CONSTANTS.LOOT_GENERATION.POSITION_SPREAD,
-            y: position.y + (Math.random() - 0.5) * GAME_CONSTANTS.LOOT_GENERATION.POSITION_SPREAD
+            x: position.x + (Math.random() - 0.5),
+            y: position.y + (Math.random() - 0.5)
           };
           this.lootSystem.createItemDrop(item, itemData.quantity, dropPosition);
         }

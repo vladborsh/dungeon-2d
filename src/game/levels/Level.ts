@@ -13,9 +13,8 @@ export class Level {
   private readonly wallShadowSprite: Sprite;
 
   public constructor() {
-    // Make maze bigger than canvas - 1.5x larger for more exploration space
-    const mazeWidth = Math.floor((GAME_CONSTANTS.CANVAS.WIDTH * 1.5) / GAME_CONSTANTS.TILE_SIZE);
-    const mazeHeight = Math.floor((GAME_CONSTANTS.CANVAS.HEIGHT * 1.5) / GAME_CONSTANTS.TILE_SIZE);
+    const mazeWidth = Math.floor((GAME_CONSTANTS.CANVAS.WIDTH * GAME_CONSTANTS.MAZE.SIZE_MULTIPLIER) / GAME_CONSTANTS.TILE_SIZE);
+    const mazeHeight = Math.floor((GAME_CONSTANTS.CANVAS.HEIGHT * GAME_CONSTANTS.MAZE.SIZE_MULTIPLIER) / GAME_CONSTANTS.TILE_SIZE);
     
     const generator = new MazeGenerator(mazeWidth, mazeHeight);
     this.maze = generator.generate();

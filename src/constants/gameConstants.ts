@@ -36,9 +36,10 @@ export const GAME_CONSTANTS = {
       MIN_ROOM_SIZE: 3,
       MAX_ROOM_SIZE: 7,
       ROOM_ATTEMPTS: 10,
-      MIN_ROOM_COUNT: 3,
-      MAX_ROOM_COUNT: 8,
+      MIN_ROOM_COUNT: 20,
+      MAX_ROOM_COUNT: 40,
     },
+    SIZE_MULTIPLIER: 5, // How much bigger the maze should be compared to canvas
   },
   INVENTORY: {
     MAX_SLOTS: 30,
