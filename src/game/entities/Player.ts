@@ -7,6 +7,7 @@ import { Sprite } from '../../rendering/sprites/Sprite';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
 import { Inventory } from '../systems/Inventory';
 import { ItemDatabase } from '../systems/ItemDatabase';
+import { ParticleType } from '../../rendering/effects/ParticleSystem';
 
 interface Velocity {
   readonly x: number;
@@ -185,6 +186,15 @@ export class Player implements GameObject {
     
     // Process damage
     hitEnemies.forEach(enemy => {
+      // Process damage and create particles
+      this.gameEngine.getDamageSystem().processPlayerAttack(
+        this.position,
+        this.size,
+        enemy.position,
+        enemy.size,
+        stats.attack
+      );
+
       const killed = enemy.takeDamage(stats.attack);
       if (killed) {
         this.gainExperience(enemy.getExperienceReward());

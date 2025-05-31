@@ -280,31 +280,16 @@ export abstract class Enemy implements GameObject {
     const dy = target.position.y - this.position.y;
     const angle = Math.atan2(dy, dx);
     
-    // Create hit particles if attack lands
+    // Process damage and create particles if attack lands
     if (target.takeDamage(this.stats.damage)) {
-      // Create particles at the point of impact
-      const impactPoint = {
-        x: target.position.x + target.size.width / 2 - Math.cos(angle) * target.size.width / 2,
-        y: target.position.y + target.size.height / 2 - Math.sin(angle) * target.size.height / 2
-      };
-
-      // Configure particle emission
-      this.gameEngine.getParticleSystem().emitParticles({
-        position: impactPoint,
-        particleCount: 8,
-        particleLifetime: 20,
-        particleSize: 2,
-        particleColor: GAME_CONSTANTS.ENEMIES.ATTACK.COLORS[this.enemyType] || '#FF0000',
-        velocityRange: {
-          minX: -Math.cos(angle) * 2 - 1,
-          maxX: -Math.cos(angle) * 2 + 1,
-          minY: -Math.sin(angle) * 2 - 1,
-          maxY: -Math.sin(angle) * 2 + 1
-        },
-        gravity: 0.1,
-        decay: 0.05,
-        type: ParticleType.EXPLOSION
-      });
+      // Create particles for successful hit
+      this.gameEngine.getDamageSystem().processEnemyAttack(
+        this.position,
+        this.size,
+        target.position,
+        target.size,
+        GAME_CONSTANTS.ENEMIES.ATTACK.COLORS[this.enemyType] || '#FF0000'
+      );
 
       return true;
     }

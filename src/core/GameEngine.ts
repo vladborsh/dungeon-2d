@@ -15,6 +15,7 @@ import { CanvasOverlayUI } from '../rendering/ui/CanvasOverlayUI';
 import { ParticleSystem } from '../rendering/effects/ParticleSystem';
 import { PlayerTrailSystem } from '../game/systems/PlayerTrailSystem';
 import { FogOfWar } from '../rendering/effects/FogOfWar';
+import { DamageSystem } from '../game/systems/DamageSystem';
 
 export class GameEngine {
   private readonly canvas: HTMLCanvasElement;
@@ -33,6 +34,7 @@ export class GameEngine {
   private readonly canvasOverlayUI: CanvasOverlayUI;
   private readonly particleSystem: ParticleSystem;
   private readonly fogOfWar: FogOfWar;
+  private readonly damageSystem: DamageSystem;
   private player: Player | null;
   private readonly playerTrailSystem: PlayerTrailSystem;
   private animationFrameId: number;
@@ -72,6 +74,7 @@ export class GameEngine {
     this.lootSystem = new LootSystem();
     this.particleSystem = new ParticleSystem();
     this.fogOfWar = new FogOfWar();
+    this.damageSystem = new DamageSystem(this);
     
     // Initialize UI systems first
     this.helpUI = new HelpUI({
@@ -206,6 +209,13 @@ export class GameEngine {
     return this.particleSystem;
   }
 
+  /**
+   * Get the damage system for external access
+   */
+  public getDamageSystem(): DamageSystem {
+    return this.damageSystem;
+  }
+
   private gameLoop(): void {
     const currentTime = performance.now();
     const deltaTime = currentTime - this.lastFrameTime;
@@ -294,8 +304,8 @@ export class GameEngine {
     // Render level floor and objects (but not walls)
     this.level.render(this.ctx);
 
-    // Render particles (behind game objects)
-    this.particleSystem.render(this.ctx);
+    // Render background particles (effects like trails)
+    this.particleSystem.renderBackgroundParticles(this.ctx);
 
     // Render item drops (in front of floor)
     this.lootSystem.renderItemDrops(this.ctx);
@@ -303,10 +313,16 @@ export class GameEngine {
     // Render enemies (in front of drops)
     this.enemyManager.render(this.ctx);
 
+    // Render enemy attack particles above enemies
+    this.particleSystem.renderEnemyAttackParticles(this.ctx);
+
     // Render all game objects (player in front of everything except walls)
     for (const object of this.gameObjects) {
       object.render(this.ctx);
     }
+
+    // Render player attack particles above player
+    this.particleSystem.renderPlayerAttackParticles(this.ctx);
 
     // Render walls last so they appear in front of everything
     this.level.renderWalls(this.ctx);

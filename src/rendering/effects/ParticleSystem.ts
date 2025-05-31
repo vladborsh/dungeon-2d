@@ -16,7 +16,9 @@ export interface Particle {
 
 export enum ParticleType {
   TRAIL = 'trail',
-  EXPLOSION = 'explosion'
+  EXPLOSION = 'explosion',
+  PLAYER_ATTACK = 'player_attack',
+  ENEMY_ATTACK = 'enemy_attack'
 }
 
 export interface ParticleEmitterConfig {
@@ -87,7 +89,7 @@ export class ParticleSystem {
         maxLife: 45,
         gravity: 0.1,
         decay: 0.02,
-        type: ParticleType.EXPLOSION
+        type: ParticleType.TRAIL // Change explosion particles to trail type since they're background effects
       };
 
       this.particles.set(particle.id, particle);
@@ -152,23 +154,47 @@ export class ParticleSystem {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D): void {
+  public renderBackgroundParticles(ctx: CanvasRenderingContext2D): void {
     ctx.save();
-
     for (const particle of this.particles.values()) {
-      ctx.globalAlpha = particle.alpha;
-      ctx.fillStyle = particle.color;
-      
-      // Draw square particle
-      ctx.fillRect(
-        Math.round(particle.position.x - particle.size / 2),
-        Math.round(particle.position.y - particle.size / 2),
-        particle.size,
-        particle.size
-      );
+      if (particle.type === ParticleType.TRAIL || particle.type === ParticleType.EXPLOSION) {
+        this.renderParticle(ctx, particle);
+      }
     }
-
     ctx.restore();
+  }
+
+  public renderEnemyAttackParticles(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    for (const particle of this.particles.values()) {
+      if (particle.type === ParticleType.ENEMY_ATTACK) {
+        this.renderParticle(ctx, particle);
+      }
+    }
+    ctx.restore();
+  }
+
+  public renderPlayerAttackParticles(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    for (const particle of this.particles.values()) {
+      if (particle.type === ParticleType.PLAYER_ATTACK) {
+        this.renderParticle(ctx, particle);
+      }
+    }
+    ctx.restore();
+  }
+
+  private renderParticle(ctx: CanvasRenderingContext2D, particle: Particle): void {
+    ctx.globalAlpha = particle.alpha;
+    ctx.fillStyle = particle.color;
+    
+    // Draw square particle
+    ctx.fillRect(
+      Math.round(particle.position.x - particle.size / 2),
+      Math.round(particle.position.y - particle.size / 2),
+      particle.size,
+      particle.size
+    );
   }
 
   public getParticleCount(): number {
