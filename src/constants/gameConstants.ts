@@ -381,4 +381,24 @@ export const GAME_CONSTANTS = {
       },
     },
   },
+  FOG_OF_WAR: {
+    TILE_SIZE: 30,
+    VISIBILITY_RADIUS: 350,
+    EXPONENTIAL_FACTOR: 0.8, // Higher values make fog thicker at the edges
+    GRADIENT_STOPS: {
+      INNER: {
+        POSITION: 0,
+        COLOR: 'rgba(0, 0, 0, 0)'
+      },
+      MIDDLE: {
+        POSITION: 0.3,
+        COLOR: 'rgba(0, 0, 0, 0.1)'
+      },
+      OUTER: {
+        POSITION: 1,
+        COLOR: 'rgba(0, 0, 0, 1)'
+      }
+    },
+    FOG_COLOR: 'rgba(0, 0, 0, 1)'
+  },
 } as const;

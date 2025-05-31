@@ -14,6 +14,7 @@ import { HelpUI } from '../rendering/ui/HelpUI';
 import { CanvasOverlayUI } from '../rendering/ui/CanvasOverlayUI';
 import { ParticleSystem } from '../rendering/effects/ParticleSystem';
 import { PlayerTrailSystem } from '../game/systems/PlayerTrailSystem';
+import { FogOfWar } from '../rendering/effects/FogOfWar';
 
 export class GameEngine {
   private readonly canvas: HTMLCanvasElement;
@@ -31,6 +32,7 @@ export class GameEngine {
   private readonly helpUI: HelpUI;
   private readonly canvasOverlayUI: CanvasOverlayUI;
   private readonly particleSystem: ParticleSystem;
+  private readonly fogOfWar: FogOfWar;
   private player: Player | null;
   private readonly playerTrailSystem: PlayerTrailSystem;
   private animationFrameId: number;
@@ -69,6 +71,7 @@ export class GameEngine {
     this.camera = new Camera();
     this.lootSystem = new LootSystem();
     this.particleSystem = new ParticleSystem();
+    this.fogOfWar = new FogOfWar();
     this.inventoryUI = new InventoryUI({
       slotSize: 32,
       slotsPerRow: 6,
@@ -307,7 +310,12 @@ export class GameEngine {
     // Restore camera transformation for UI elements
     this.camera.restore(this.ctx);
 
-    // Render UI components (fixed to screen)
+    // Render fog of war effect if player exists (after world render but before UI)
+    if (this.player) {
+      this.fogOfWar.render(this.ctx, this.player, this.camera);
+    }
+
+    // Render UI components (fixed to screen, on top of fog)
     this.canvasOverlayUI.render(this.ctx);
     this.inventoryUI.render(this.ctx);
     
