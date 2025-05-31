@@ -3,6 +3,7 @@ import type { LootSystem } from './LootSystem';
 import type { InventoryUI } from '../../rendering/ui/InventoryUI';
 import type { HelpUI } from '../../rendering/ui/HelpUI';
 import type { Camera } from '../../core/Camera';
+import type { EnemyManager } from './EnemyManager';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
 
 /**
@@ -15,54 +16,10 @@ export class EventHandler {
   private readonly inventoryUI: InventoryUI;
   private readonly helpUI: HelpUI;
   private readonly camera: Camera;
+  private readonly enemyManager: EnemyManager;
 
-  public constructor(
-    canvas: HTMLCanvasElement,
-    player: Player,
-    lootSystem: LootSystem,
-    inventoryUI: InventoryUI,
-    helpUI: HelpUI,
-    camera: Camera
-  ) {
-    this.canvas = canvas;
-    this.player = player;
-    this.lootSystem = lootSystem;
-    this.inventoryUI = inventoryUI;
-    this.helpUI = helpUI;
-    this.camera = camera;
-    
-    this.setupEventHandlers();
-  }
-
-  /**
-   * Set up all event handlers
-   */
-  private setupEventHandlers(): void {
-    this.setupKeyboardHandlers();
-    this.setupMouseHandlers();
-  }
-
-  /**
-   * Set up keyboard event handlers
-   */
-  private setupKeyboardHandlers(): void {
-    document.addEventListener('keydown', this.handleKeydown.bind(this));
-    document.addEventListener('keyup', this.handleKeyup.bind(this));
-  }
-
-  /**
-   * Set up mouse event handlers
-   */
-  private setupMouseHandlers(): void {
-    this.canvas.addEventListener('click', this.handleMouseClick.bind(this));
-    this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    this.canvas.addEventListener('contextmenu', this.handleRightClick.bind(this));
-  }
-
-  /**
-   * Handle keydown events
-   */
-  private handleKeydown(event: KeyboardEvent): void {
+  // Store bound event handlers as class fields using arrow functions
+  private readonly boundHandleKeydown = (event: KeyboardEvent): void => {
     switch (event.key.toLowerCase()) {
       case GAME_CONSTANTS.CONTROLS.INVENTORY_TOGGLE:
         this.inventoryUI.toggle();
@@ -72,6 +29,10 @@ export class EventHandler {
         break;
       case GAME_CONSTANTS.CONTROLS.COLLECT_ITEM:
         this.handleItemCollection();
+        break;
+      case GAME_CONSTANTS.CONTROLS.ATTACK:
+        event.preventDefault(); // Prevent page scroll
+        this.handleAttack();
         break;
       case '1':
       case '2':
@@ -95,20 +56,14 @@ export class EventHandler {
         // Handle movement keys through the input manager
         break;
     }
-  }
+  };
 
-  /**
-   * Handle keyup events
-   */
-  private handleKeyup(event: KeyboardEvent): void {
+  private readonly boundHandleKeyup = (event: KeyboardEvent): void => {
     // Handle any key release events if needed
     // Movement is handled by the InputManager
-  }
+  };
 
-  /**
-   * Handle mouse click events
-   */
-  private handleMouseClick(event: MouseEvent): void {
+  private readonly boundHandleMouseClick = (event: MouseEvent): void => {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
@@ -120,6 +75,72 @@ export class EventHandler {
     
     // Handle world interactions
     this.handleWorldClick(mouseX, mouseY);
+  };
+
+  private readonly boundHandleMouseMove = (event: MouseEvent): void => {
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    // Handle UI hover effects
+    this.handleUIHover(mouseX, mouseY);
+  };
+
+  private readonly boundHandleRightClick = (event: MouseEvent): void => {
+    event.preventDefault(); // Prevent context menu
+    
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    // Handle right-click actions
+    this.handleRightClickActions(mouseX, mouseY);
+  };
+
+  public constructor(
+    canvas: HTMLCanvasElement,
+    player: Player,
+    lootSystem: LootSystem,
+    inventoryUI: InventoryUI,
+    helpUI: HelpUI,
+    camera: Camera,
+    enemyManager: EnemyManager
+  ) {
+    this.canvas = canvas;
+    this.player = player;
+    console.log(player)
+    this.lootSystem = lootSystem;
+    this.inventoryUI = inventoryUI;
+    this.helpUI = helpUI;
+    this.camera = camera;
+    this.enemyManager = enemyManager;
+    
+    this.setupEventHandlers();
+  }
+
+  /**
+   * Set up all event handlers
+   */
+  private setupEventHandlers(): void {
+    this.setupKeyboardHandlers();
+    this.setupMouseHandlers();
+  }
+
+  /**
+   * Set up keyboard event handlers
+   */
+  private setupKeyboardHandlers(): void {
+    document.addEventListener('keydown', this.boundHandleKeydown);
+    document.addEventListener('keyup', this.boundHandleKeyup);
+  }
+
+  /**
+   * Set up mouse event handlers
+   */
+  private setupMouseHandlers(): void {
+    this.canvas.addEventListener('click', this.boundHandleMouseClick);
+    this.canvas.addEventListener('mousemove', this.boundHandleMouseMove);
+    this.canvas.addEventListener('contextmenu', this.boundHandleRightClick);
   }
 
   /**
@@ -153,17 +174,19 @@ export class EventHandler {
    */
   private handleUIClicks(mouseX: number, mouseY: number): boolean {
     // Check hint button first (highest priority)
-    if (this.helpUI.handleHintButtonClick(mouseX, mouseY)) {
+    if (this.helpUI?.handleHintButtonClick?.(mouseX, mouseY)) {
       return true;
     }
     
     // Check help UI click (if visible)
-    if (this.helpUI.handleClick(mouseX, mouseY)) {
+    if (this.helpUI?.handleClick?.(mouseX, mouseY)) {
       return true;
     }
     
-    // Note: Inventory UI now handles its own HTML-based clicks,
-    // no need to handle canvas-based inventory clicks here
+    // Check inventory UI clicks
+    if (this.inventoryUI?.handleClick?.(mouseX, mouseY)) {
+      return true;
+    }
     
     return false;
   }
@@ -238,13 +261,20 @@ export class EventHandler {
   }
 
   /**
+   * Handle attack action
+   */
+  private handleAttack(): void {
+    this.player.attack(this.enemyManager.getEnemies());
+  }
+
+  /**
    * Clean up event listeners
    */
   public destroy(): void {
-    document.removeEventListener('keydown', this.handleKeydown.bind(this));
-    document.removeEventListener('keyup', this.handleKeyup.bind(this));
-    this.canvas.removeEventListener('click', this.handleMouseClick.bind(this));
-    this.canvas.removeEventListener('mousemove', this.handleMouseMove.bind(this));
-    this.canvas.removeEventListener('contextmenu', this.handleRightClick.bind(this));
+    document.removeEventListener('keydown', this.boundHandleKeydown);
+    document.removeEventListener('keyup', this.boundHandleKeyup);
+    this.canvas.removeEventListener('click', this.boundHandleMouseClick);
+    this.canvas.removeEventListener('mousemove', this.boundHandleMouseMove);
+    this.canvas.removeEventListener('contextmenu', this.boundHandleRightClick);
   }
 }

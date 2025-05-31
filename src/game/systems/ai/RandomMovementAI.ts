@@ -1,6 +1,7 @@
-import type { GameObject, Position, EnemyAI } from '../../../interfaces/gameInterfaces';
+import type { Position, EnemyAI } from '../../../interfaces/gameInterfaces';
 import { EnemyState } from '../../../interfaces/gameInterfaces';
 import type { Level } from '../../levels/Level';
+import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import { GAME_CONSTANTS } from '../../../constants/gameConstants';
 
@@ -18,12 +19,12 @@ export class RandomMovementAI implements EnemyAI {
     this.generateRandomDirection();
   }
 
-  public update(enemy: GameObject, player: GameObject, level: Level): void {
+  public update(enemy: Enemy, player: Player, level: Level): void {
     const now = Date.now();
 
     // Check if player is detected
     const playerDistance = this.getDistance(enemy.position, player.position);
-    const enemyStats = (enemy as any).getStats();
+    const enemyStats = enemy.getStats();
     
     if (playerDistance <= enemyStats.detectionRadius) {
       this.state = EnemyState.CHASING;
@@ -49,20 +50,16 @@ export class RandomMovementAI implements EnemyAI {
     }
   }
 
-  private chasePlayer(enemy: GameObject, player: GameObject, level: Level): void {
-    const enemyAny = enemy as any;
-    
+  private chasePlayer(enemy: Enemy, player: Player, level: Level): void {    
     // Check if can attack
-    if (enemyAny.canAttack && enemyAny.canAttack(player.position)) {
+    if (enemy.canAttack(player.position)) {
       this.state = EnemyState.ATTACKING;
-      enemyAny.attack(player);
+      enemy.attack(player);
       return;
     }
 
     // Move towards player
-    if (enemyAny.moveTowards) {
-      enemyAny.moveTowards(player.position);
-    }
+    enemy.moveTowards(player.position);
   }
 
   private generateRandomDirection(): void {
@@ -73,12 +70,11 @@ export class RandomMovementAI implements EnemyAI {
     };
   }
 
-  private moveInDirection(enemy: GameObject, level: Level): void {
-    const enemyAny = enemy as any;
-    const stats = enemyAny.getStats();
+  private moveInDirection(enemy: Enemy, level: Level): void {
+    const stats = enemy.getStats();
     
     // Calculate target position based on current direction
-    const targetX = enemy.position.x + this.currentDirection.x * stats.speed * 2; // Multiply by 2 for smoother movement
+    const targetX = enemy.position.x + this.currentDirection.x * stats.speed * 2;
     const targetY = enemy.position.y + this.currentDirection.y * stats.speed * 2;
     
     const targetPosition = { x: targetX, y: targetY };
@@ -86,10 +82,7 @@ export class RandomMovementAI implements EnemyAI {
     // Store old position to check if movement was successful
     const oldPosition = { ...enemy.position };
     
-    // Use the enemy's moveTowards method which has proper collision detection
-    if (enemyAny.moveTowards) {
-      enemyAny.moveTowards(targetPosition);
-    }
+    enemy.moveTowards(targetPosition);
     
     // Check if movement was blocked and change direction if needed
     const moved = (Math.abs(enemy.position.x - oldPosition.x) > 0.1 || 

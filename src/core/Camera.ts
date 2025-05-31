@@ -10,6 +10,9 @@ export class Camera {
   private readonly viewportHeight: number;
   private readonly smoothingFactor: number;
   private targetPosition: Position;
+  private shakeIntensity: number = 0;
+  private shakeDecay: number = 0.9;
+  private shakeOffset: Position = { x: 0, y: 0 };
 
   public constructor() {
     this.position = { x: 0, y: 0 };
@@ -17,6 +20,14 @@ export class Camera {
     this.viewportWidth = GAME_CONSTANTS.CANVAS.WIDTH;
     this.viewportHeight = GAME_CONSTANTS.CANVAS.HEIGHT;
     this.smoothingFactor = GAME_CONSTANTS.CAMERA.SMOOTHING_FACTOR;
+  }
+
+  /**
+   * Trigger a camera shake effect
+   * @param intensity Initial shake intensity in pixels
+   */
+  public shake(intensity: number): void {
+    this.shakeIntensity = intensity;
   }
 
   /**
@@ -34,6 +45,20 @@ export class Camera {
       x: this.position.x + (this.targetPosition.x - this.position.x) * this.smoothingFactor,
       y: this.position.y + (this.targetPosition.y - this.position.y) * this.smoothingFactor
     };
+
+    // Update shake effect
+    if (this.shakeIntensity > 0) {
+      this.shakeOffset = {
+        x: (Math.random() * 2 - 1) * this.shakeIntensity,
+        y: (Math.random() * 2 - 1) * this.shakeIntensity
+      };
+      this.shakeIntensity *= this.shakeDecay;
+      
+      if (this.shakeIntensity < 0.1) {
+        this.shakeIntensity = 0;
+        this.shakeOffset = { x: 0, y: 0 };
+      }
+    }
   }
 
   /**
@@ -41,7 +66,10 @@ export class Camera {
    */
   public apply(ctx: CanvasRenderingContext2D): void {
     ctx.save();
-    ctx.translate(-Math.round(this.position.x), -Math.round(this.position.y));
+    ctx.translate(
+      -Math.round(this.position.x + this.shakeOffset.x), 
+      -Math.round(this.position.y + this.shakeOffset.y)
+    );
   }
 
   /**

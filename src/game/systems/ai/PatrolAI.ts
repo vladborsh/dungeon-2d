@@ -1,6 +1,7 @@
-import type { GameObject, Position, EnemyAI } from '../../../interfaces/gameInterfaces';
+import type { Position, EnemyAI } from '../../../interfaces/gameInterfaces';
 import { EnemyState } from '../../../interfaces/gameInterfaces';
 import type { Level } from '../../levels/Level';
+import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import { GAME_CONSTANTS } from '../../../constants/gameConstants';
 
@@ -21,10 +22,10 @@ export class PatrolAI implements EnemyAI {
     this.patrolPoints = this.generatePatrolPoints(centerPosition);
   }
 
-  public update(enemy: GameObject, player: GameObject, level: Level): void {
+  public update(enemy: Enemy, player: Player, level: Level): void {
     // Check if player is detected first
     const playerDistance = this.getDistance(enemy.position, player.position);
-    const enemyStats = (enemy as any).getStats();
+    const enemyStats = enemy.getStats();
     
     if (playerDistance <= enemyStats.detectionRadius) {
       this.state = EnemyState.CHASING;
@@ -41,23 +42,19 @@ export class PatrolAI implements EnemyAI {
     this.patrol(enemy, level);
   }
 
-  private chasePlayer(enemy: GameObject, player: GameObject, level: Level): void {
-    const enemyAny = enemy as any;
-    
+  private chasePlayer(enemy: Enemy, player: Player, level: Level): void {
     // Check if can attack
-    if (enemyAny.canAttack && enemyAny.canAttack(player.position)) {
+    if (enemy.canAttack(player.position)) {
       this.state = EnemyState.ATTACKING;
-      enemyAny.attack(player);
+      enemy.attack(player);
       return;
     }
 
     // Move towards player
-    if (enemyAny.moveTowards) {
-      enemyAny.moveTowards(player.position);
-    }
+    enemy.moveTowards(player.position);
   }
 
-  private patrol(enemy: GameObject, level: Level): void {
+  private patrol(enemy: Enemy, level: Level): void {
     if (this.isWaiting) {
       const now = Date.now();
       if (now - this.waitStartTime >= GAME_CONSTANTS.ENEMIES.AI.PATROL.WAIT_TIME) {
@@ -76,10 +73,7 @@ export class PatrolAI implements EnemyAI {
       this.state = EnemyState.IDLE;
     } else {
       this.state = EnemyState.PATROLLING;
-      const enemyAny = enemy as any;
-      if (enemyAny.moveTowards) {
-        enemyAny.moveTowards(targetPoint);
-      }
+      enemy.moveTowards(targetPoint);
     }
   }
 

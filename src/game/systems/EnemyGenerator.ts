@@ -9,6 +9,7 @@ import { PatrolAI } from './ai/PatrolAI';
 import { GuardAI } from './ai/GuardAI';
 import { AggressiveAI } from './ai/AggressiveAI';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
+import type { GameEngine } from '../../core/GameEngine';
 
 interface EnemySpawnConfig {
   readonly type: EnemyType;
@@ -19,9 +20,11 @@ interface EnemySpawnConfig {
 export class EnemyGenerator {
   private readonly level: Level;
   private readonly spawnConfigs: EnemySpawnConfig[];
+  private readonly gameEngine: GameEngine;
 
-  public constructor(level: Level) {
+  public constructor(level: Level, gameEngine: GameEngine) {
     this.level = level;
+    this.gameEngine = gameEngine;
     this.spawnConfigs = [
       { type: EnemyType.GOBLIN, aiType: 'random', weight: 0.4 },
       { type: EnemyType.GOBLIN, aiType: 'patrol', weight: 0.3 },
@@ -138,13 +141,13 @@ export class EnemyGenerator {
   public createEnemyOfType(type: EnemyType, position: Position, ai: EnemyAI): Enemy | null {
     switch (type) {
       case EnemyType.GOBLIN:
-        return new Goblin(position, ai);
+        return new Goblin(position, ai, this.gameEngine);
       case EnemyType.SKELETON:
-        return new Skeleton(position, ai);
+        return new Skeleton(position, ai, this.gameEngine);
       case EnemyType.SPIDER:
-        return new Spider(position, ai);
+        return new Spider(position, ai, this.gameEngine);
       case EnemyType.TROLL:
-        return new Troll(position, ai);
+        return new Troll(position, ai, this.gameEngine);
       default:
         return null;
     }

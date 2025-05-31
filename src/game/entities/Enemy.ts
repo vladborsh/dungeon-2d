@@ -11,6 +11,8 @@ import type { Level } from '../levels/Level';
 import type { Player } from './Player';
 import { Sprite } from '../../rendering/sprites/Sprite';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
+import type { GameEngine } from '../../core/GameEngine';
+import { ParticleType } from '../../rendering/effects/ParticleSystem';
 
 export abstract class Enemy implements GameObject {
   public position: Position;
@@ -21,15 +23,19 @@ export abstract class Enemy implements GameObject {
   protected readonly enemyType: EnemyType;
   protected ai: EnemyAI;
   protected lastAttackTime: number;
+  protected isAttacking: boolean;
+  protected attackStartTime: number;
   protected isDead: boolean;
   protected level: Level | null;
   protected deathTime: number;
+  protected readonly gameEngine: GameEngine;
 
   public constructor(
     position: Position, 
     enemyType: EnemyType, 
     stats: EnemyStats,
-    ai: EnemyAI
+    ai: EnemyAI,
+    gameEngine: GameEngine
   ) {
     this.position = position;
     this.enemyType = enemyType;
@@ -37,9 +43,12 @@ export abstract class Enemy implements GameObject {
     this.currentHealth = stats.maxHealth;
     this.ai = ai;
     this.lastAttackTime = 0;
+    this.isAttacking = false;
+    this.attackStartTime = 0;
     this.isDead = false;
     this.level = null;
     this.deathTime = 0;
+    this.gameEngine = gameEngine;
     
     this.size = this.getEnemySize();
     this.sprite = this.createSprite();
@@ -88,6 +97,63 @@ export abstract class Enemy implements GameObject {
 
     // Render health bar above enemy
     this.renderHealthBar(ctx);
+
+    // Render attack animation if attacking
+    if (this.isAttacking) {
+      const attackProgress = (Date.now() - this.attackStartTime) / GAME_CONSTANTS.ENEMIES.ATTACK.ANIMATION_DURATION;
+      
+      if (attackProgress >= 1) {
+        this.isAttacking = false;
+      } else {
+        this.renderAttackAnimation(ctx, attackProgress);
+      }
+    }
+  }
+
+  protected renderAttackAnimation(ctx: CanvasRenderingContext2D, progress: number): void {
+    // Get enemy center position
+    const centerX = this.position.x + this.size.width / 2;
+    const centerY = this.position.y + this.size.height / 2;
+
+    // Calculate animation properties
+    const maxRange = this.stats.attackRange;
+    const range = maxRange * progress;
+    const opacity = Math.max(0, 1 - progress); // Fade out as progress increases
+
+    // Save context state
+    ctx.save();
+
+    // Draw slash effect
+    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    
+    // Draw multiple arcs for a slashing effect
+    const startAngle = progress * Math.PI;
+    const endAngle = startAngle + Math.PI / 2;
+    ctx.arc(centerX, centerY, range * 0.8, startAngle, endAngle);
+    ctx.stroke();
+
+    // Add attack particles
+    const particleCount = GAME_CONSTANTS.ENEMIES.ATTACK.PARTICLE_COUNT;
+    const attackColor = GAME_CONSTANTS.ENEMIES.ATTACK.COLORS[this.enemyType];
+    
+    for (let i = 0; i < particleCount; i++) {
+      const angle = startAngle + (endAngle - startAngle) * (i / particleCount);
+      const particleDistance = range * (0.6 + Math.random() * 0.4);
+      const x = centerX + Math.cos(angle) * particleDistance;
+      const y = centerY + Math.sin(angle) * particleDistance;
+      
+      const particleSize = 2 + Math.random() * 2;
+      
+      ctx.fillStyle = `${attackColor}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`;
+      ctx.beginPath();
+      ctx.arc(x, y, particleSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Restore context state
+    ctx.restore();
   }
 
   protected renderShadow(ctx: CanvasRenderingContext2D): void {
@@ -163,8 +229,24 @@ export abstract class Enemy implements GameObject {
   }
 
   protected die(): void {
-    this.isDead = true;
-    this.deathTime = Date.now();
+    if (!this.isDead) {
+      this.isDead = true;
+      this.deathTime = Date.now();
+
+      // Get the center position of the enemy
+      const centerPosition = {
+        x: this.position.x + this.size.width / 2,
+        y: this.position.y + this.size.height / 2
+      };
+
+      // Create death explosion particles
+      const particleCount = Math.floor(12 + this.size.width / 4); // More particles for larger enemies
+      this.gameEngine.getParticleSystem().createExplosionParticles(centerPosition, particleCount);
+
+      // Add camera shake based on enemy size
+      const shakeIntensity = Math.min(5 + this.size.width / 8, 12);
+      this.gameEngine.getCamera().shake(shakeIntensity);
+    }
   }
 
   public canAttack(targetPosition: Position): boolean {
@@ -187,7 +269,47 @@ export abstract class Enemy implements GameObject {
     }
 
     this.lastAttackTime = Date.now();
-    return target.takeDamage(this.stats.damage);
+    this.isAttacking = true;
+    this.attackStartTime = Date.now();
+
+    // Add camera shake effect
+    this.gameEngine.getCamera().shake(3);
+    
+    // Calculate angle between enemy and player for hit particles
+    const dx = target.position.x - this.position.x;
+    const dy = target.position.y - this.position.y;
+    const angle = Math.atan2(dy, dx);
+    
+    // Create hit particles if attack lands
+    if (target.takeDamage(this.stats.damage)) {
+      // Create particles at the point of impact
+      const impactPoint = {
+        x: target.position.x + target.size.width / 2 - Math.cos(angle) * target.size.width / 2,
+        y: target.position.y + target.size.height / 2 - Math.sin(angle) * target.size.height / 2
+      };
+
+      // Configure particle emission
+      this.gameEngine.getParticleSystem().emitParticles({
+        position: impactPoint,
+        particleCount: 8,
+        particleLifetime: 20,
+        particleSize: 2,
+        particleColor: GAME_CONSTANTS.ENEMIES.ATTACK.COLORS[this.enemyType] || '#FF0000',
+        velocityRange: {
+          minX: -Math.cos(angle) * 2 - 1,
+          maxX: -Math.cos(angle) * 2 + 1,
+          minY: -Math.sin(angle) * 2 - 1,
+          maxY: -Math.sin(angle) * 2 + 1
+        },
+        gravity: 0.1,
+        decay: 0.05,
+        type: ParticleType.EXPLOSION
+      });
+
+      return true;
+    }
+    
+    return false;
   }
 
   public getDistanceTo(position: Position): number {

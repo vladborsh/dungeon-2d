@@ -25,6 +25,11 @@ export const GAME_CONSTANTS = {
     ACCELERATION: 0.5, // How quickly the player accelerates
     FRICTION: 0.3, // How quickly the player slows down
     INITIAL_HEALTH: 100,
+    ATTACK: {
+      RANGE: 40,
+      COOLDOWN: 400, // milliseconds
+      ANIMATION_DURATION: 200, // milliseconds
+    }
   },
   MAZE: {
     ROOM_GENERATION: {
@@ -140,6 +145,7 @@ export const GAME_CONSTANTS = {
     COLLECT_ITEM: 'e',
     PAUSE: 'p',
     DEBUG_INFO: 'f3',
+    ATTACK: ' ' // Space key for attack
   },
   UI: {
     INVENTORY: {
@@ -323,6 +329,16 @@ export const GAME_CONSTANTS = {
       ATTACK_COOLDOWN: 1500,
       COLOR: '#556B2F',
       EXPERIENCE_REWARD: 75,
+    },
+    ATTACK: {
+      ANIMATION_DURATION: 400, // milliseconds
+      PARTICLE_COUNT: 5,
+      COLORS: {
+        GOBLIN: '#8B4513',
+        SKELETON: '#F5F5DC',
+        SPIDER: '#4B0082',
+        TROLL: '#556B2F'
+      }
     },
     SPAWN: {
       ROOM_CHANCE: 0.7, // 70% chance for enemies in rooms

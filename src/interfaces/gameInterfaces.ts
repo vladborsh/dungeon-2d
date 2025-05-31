@@ -1,3 +1,7 @@
+import type { Enemy } from '../game/entities/Enemy';
+import type { Player } from '../game/entities/Player';
+import type { Level } from '../game/levels/Level';
+
 export interface Position {
   x: number;
   y: number;
@@ -149,7 +153,7 @@ export enum EnemyState {
 }
 
 export interface EnemyAI {
-  update(enemy: GameObject, player: GameObject, level: any): void;
+  update(enemy: Enemy, player: Player, level: Level): void;
   getState(): EnemyState;
   reset(): void;
 }

@@ -3,9 +3,10 @@ import { EnemyType } from '../../interfaces/gameInterfaces';
 import { Enemy } from './Enemy';
 import { Sprite } from '../../rendering/sprites/Sprite';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
+import type { GameEngine } from '../../core/GameEngine';
 
 export class Goblin extends Enemy {
-  public constructor(position: Position, ai: EnemyAI) {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
     const stats: EnemyStats = {
       health: GAME_CONSTANTS.ENEMIES.GOBLIN.HEALTH,
       maxHealth: GAME_CONSTANTS.ENEMIES.GOBLIN.HEALTH,
@@ -17,7 +18,7 @@ export class Goblin extends Enemy {
       experienceReward: GAME_CONSTANTS.ENEMIES.GOBLIN.EXPERIENCE_REWARD,
     };
 
-    super(position, EnemyType.GOBLIN, stats, ai);
+    super(position, EnemyType.GOBLIN, stats, ai, gameEngine);
   }
 
   protected getEnemySize(): Size {
@@ -76,7 +77,7 @@ export class Goblin extends Enemy {
 }
 
 export class Skeleton extends Enemy {
-  public constructor(position: Position, ai: EnemyAI) {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
     const stats: EnemyStats = {
       health: GAME_CONSTANTS.ENEMIES.SKELETON.HEALTH,
       maxHealth: GAME_CONSTANTS.ENEMIES.SKELETON.HEALTH,
@@ -88,7 +89,7 @@ export class Skeleton extends Enemy {
       experienceReward: GAME_CONSTANTS.ENEMIES.SKELETON.EXPERIENCE_REWARD,
     };
 
-    super(position, EnemyType.SKELETON, stats, ai);
+    super(position, EnemyType.SKELETON, stats, ai, gameEngine);
   }
 
   protected getEnemySize(): Size {
@@ -145,7 +146,7 @@ export class Skeleton extends Enemy {
 }
 
 export class Spider extends Enemy {
-  public constructor(position: Position, ai: EnemyAI) {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
     const stats: EnemyStats = {
       health: GAME_CONSTANTS.ENEMIES.SPIDER.HEALTH,
       maxHealth: GAME_CONSTANTS.ENEMIES.SPIDER.HEALTH,
@@ -157,7 +158,7 @@ export class Spider extends Enemy {
       experienceReward: GAME_CONSTANTS.ENEMIES.SPIDER.EXPERIENCE_REWARD,
     };
 
-    super(position, EnemyType.SPIDER, stats, ai);
+    super(position, EnemyType.SPIDER, stats, ai, gameEngine);
   }
 
   protected getEnemySize(): Size {
@@ -211,7 +212,7 @@ export class Spider extends Enemy {
 }
 
 export class Troll extends Enemy {
-  public constructor(position: Position, ai: EnemyAI) {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
     const stats: EnemyStats = {
       health: GAME_CONSTANTS.ENEMIES.TROLL.HEALTH,
       maxHealth: GAME_CONSTANTS.ENEMIES.TROLL.HEALTH,
@@ -223,7 +224,7 @@ export class Troll extends Enemy {
       experienceReward: GAME_CONSTANTS.ENEMIES.TROLL.EXPERIENCE_REWARD,
     };
 
-    super(position, EnemyType.TROLL, stats, ai);
+    super(position, EnemyType.TROLL, stats, ai, gameEngine);
   }
 
   protected getEnemySize(): Size {

@@ -1,7 +1,8 @@
-import type { GameObject, Position, EnemyAI } from '../../../interfaces/gameInterfaces';
+import type { Position, EnemyAI } from '../../../interfaces/gameInterfaces';
 import { EnemyState } from '../../../interfaces/gameInterfaces';
 import type { Level } from '../../levels/Level';
 import type { Player } from '../../entities/Player';
+import type { Enemy } from '../../entities/Enemy';
 
 export class GuardAI implements EnemyAI {
   private state: EnemyState;
@@ -14,9 +15,9 @@ export class GuardAI implements EnemyAI {
     this.maxGuardDistance = guardDistance;
   }
 
-  public update(enemy: GameObject, player: GameObject, level: Level): void {
+  public update(enemy: Enemy, player: Player, level: Level): void {
     const playerDistance = this.getDistance(enemy.position, player.position);
-    const enemyStats = (enemy as any).getStats();
+    const enemyStats = enemy.getStats();
     const distanceFromOriginal = this.getDistance(enemy.position, this.originalPosition);
 
     // Check if player is detected and within guard range
@@ -30,10 +31,7 @@ export class GuardAI implements EnemyAI {
     // Return to original position if too far away
     if (distanceFromOriginal > 20) {
       this.state = EnemyState.PATROLLING;
-      const enemyAny = enemy as any;
-      if (enemyAny.moveTowards) {
-        enemyAny.moveTowards(this.originalPosition);
-      }
+      enemy.moveTowards(this.originalPosition);
       return;
     }
 
@@ -41,13 +39,11 @@ export class GuardAI implements EnemyAI {
     this.state = EnemyState.IDLE;
   }
 
-  private chasePlayer(enemy: GameObject, player: GameObject, level: Level): void {
-    const enemyAny = enemy as any;
-    
+  private chasePlayer(enemy: Enemy, player: Player, level: Level): void {
     // Check if can attack
-    if (enemyAny.canAttack && enemyAny.canAttack(player.position)) {
+    if (enemy.canAttack(player.position)) {
       this.state = EnemyState.ATTACKING;
-      enemyAny.attack(player);
+      enemy.attack(player);
       return;
     }
 
@@ -55,15 +51,11 @@ export class GuardAI implements EnemyAI {
     const playerDistanceFromGuard = this.getDistance(player.position, this.originalPosition);
     if (playerDistanceFromGuard <= this.maxGuardDistance) {
       // Move towards player
-      if (enemyAny.moveTowards) {
-        enemyAny.moveTowards(player.position);
-      }
+      enemy.moveTowards(player.position);
     } else {
       // Player left guard area, return to position
       this.state = EnemyState.PATROLLING;
-      if (enemyAny.moveTowards) {
-        enemyAny.moveTowards(this.originalPosition);
-      }
+      enemy.moveTowards(this.originalPosition);
     }
   }
 

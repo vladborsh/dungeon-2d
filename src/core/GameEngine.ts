@@ -72,12 +72,8 @@ export class GameEngine {
     this.lootSystem = new LootSystem();
     this.particleSystem = new ParticleSystem();
     this.fogOfWar = new FogOfWar();
-    this.inventoryUI = new InventoryUI({
-      slotSize: 32,
-      slotsPerRow: 6,
-      padding: 4
-    });
     
+    // Initialize UI systems first
     this.helpUI = new HelpUI({
       x: (GAME_CONSTANTS.CANVAS.WIDTH - 400) / 2,
       y: (GAME_CONSTANTS.CANVAS.HEIGHT - 500) / 2,
@@ -85,29 +81,40 @@ export class GameEngine {
       height: 500
     });
     
+    this.inventoryUI = new InventoryUI({
+      slotSize: 32,
+      slotsPerRow: 6,
+      padding: 4
+    });
+    
     this.canvasOverlayUI = new CanvasOverlayUI({
       width: 200,
       height: 200,
       padding: 10
     });
-    this.player = null;
-    this.animationFrameId = 0;
     
-    // Initialize FPS tracking
-    this.frameCount = 0;
-    this.fps = 0;
-    this.fpsUpdateInterval = 1000; // Update FPS display every second
-    this.lastFpsUpdate = performance.now();
-    this.lastFrameTime = performance.now();
-    this.targetFPS = 60;
-    this.frameTime = 1000 / this.targetFPS;
-
+    // Initialize specialized systems after UI
+    this.lootGenerator = new LootGenerator(this.lootSystem);
+    this.dungeonLootManager = new DungeonLootManager(this.level, this.lootGenerator);
+    this.enemyManager = new EnemyManager(this.level, this);
+    
     // Add player at the start position of the maze
     const startPosition = this.level.getStartPosition();
     this.player = new Player({
       x: startPosition.x + GAME_CONSTANTS.TILE_SIZE / 2 - GAME_CONSTANTS.PLAYER.SIZE / 2,
       y: startPosition.y + GAME_CONSTANTS.TILE_SIZE / 2 - GAME_CONSTANTS.PLAYER.SIZE / 2
-    });
+    }, this);
+    // Create event handler last, after all UI components are initialized
+    this.eventHandler = new EventHandler(
+      this.canvas,
+      this.player,
+      this.lootSystem,
+      this.inventoryUI,
+      this.helpUI,
+      this.camera,
+      this.enemyManager
+    );
+
     this.player.setInputManager(this.inputManager);
     this.player.setLevel(this.level);
     this.addGameObject(this.player);
@@ -121,24 +128,21 @@ export class GameEngine {
     // Connect player info UI to player
     this.canvasOverlayUI.setPlayer(this.player);
     
-    // Initialize specialized systems
-    this.lootGenerator = new LootGenerator(this.lootSystem);
-    this.dungeonLootManager = new DungeonLootManager(this.level, this.lootGenerator);
-    this.enemyManager = new EnemyManager(this.level);
-    this.eventHandler = new EventHandler(
-      this.canvas,
-      this.player,
-      this.lootSystem,
-      this.inventoryUI,
-      this.helpUI,
-      this.camera
-    );
-    
     // Generate loot throughout the dungeon
     this.dungeonLootManager.generateDungeonLoot();
     
     // Generate enemies throughout the dungeon
     this.enemyManager.initializeEnemies();
+    
+    // Initialize FPS tracking
+    this.frameCount = 0;
+    this.fps = 0;
+    this.animationFrameId = 0;
+    this.fpsUpdateInterval = 1000; // Update FPS display every second
+    this.lastFpsUpdate = performance.now();
+    this.lastFrameTime = performance.now();
+    this.targetFPS = 60;
+    this.frameTime = 1000 / this.targetFPS;
   }
 
   public start(): void {

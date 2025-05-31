@@ -5,6 +5,7 @@ import type { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { EnemyGenerator } from './EnemyGenerator';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
+import type { GameEngine } from '../../core/GameEngine';
 
 export class EnemyManager {
   private readonly level: Level;
@@ -12,9 +13,9 @@ export class EnemyManager {
   private enemies: Enemy[];
   private lastUpdate: number;
 
-  public constructor(level: Level) {
+  public constructor(level: Level, gameEngine: GameEngine) {
     this.level = level;
-    this.enemyGenerator = new EnemyGenerator(level);
+    this.enemyGenerator = new EnemyGenerator(level, gameEngine);
     this.enemies = [];
     this.lastUpdate = Date.now();
   }

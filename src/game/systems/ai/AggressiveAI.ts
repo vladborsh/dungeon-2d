@@ -1,7 +1,8 @@
-import type { GameObject, Position, EnemyAI } from '../../../interfaces/gameInterfaces';
+import type { Position, EnemyAI } from '../../../interfaces/gameInterfaces';
 import { EnemyState } from '../../../interfaces/gameInterfaces';
 import type { Level } from '../../levels/Level';
 import type { Player } from '../../entities/Player';
+import type { Enemy } from '../../entities/Enemy';
 
 export class AggressiveAI implements EnemyAI {
   private state: EnemyState;
@@ -16,9 +17,9 @@ export class AggressiveAI implements EnemyAI {
     this.maxSearchTime = 5000; // Search for 5 seconds
   }
 
-  public update(enemy: GameObject, player: GameObject, level: Level): void {
+  public update(enemy: Enemy, player: Player, level: Level): void {
     const playerDistance = this.getDistance(enemy.position, player.position);
-    const enemyStats = (enemy as any).getStats();
+    const enemyStats = enemy.getStats();
 
     // Always chase if player is detected
     if (playerDistance <= enemyStats.detectionRadius) {
@@ -33,10 +34,7 @@ export class AggressiveAI implements EnemyAI {
     if (this.lastPlayerPosition && this.searchTime < this.maxSearchTime) {
       this.state = EnemyState.CHASING;
       this.searchTime += 16; // Approximate frame time
-      const enemyAny = enemy as any;
-      if (enemyAny.moveTowards) {
-        enemyAny.moveTowards(this.lastPlayerPosition);
-      }
+      enemy.moveTowards(this.lastPlayerPosition);
 
       // Stop searching if reached last known position
       const distanceToLastPos = this.getDistance(enemy.position, this.lastPlayerPosition);
@@ -53,20 +51,16 @@ export class AggressiveAI implements EnemyAI {
     this.searchTime = 0;
   }
 
-  private chasePlayer(enemy: GameObject, player: GameObject, level: Level): void {
-    const enemyAny = enemy as any;
-    
+  private chasePlayer(enemy: Enemy, player: Player, level: Level): void {
     // Check if can attack
-    if (enemyAny.canAttack && enemyAny.canAttack(player.position)) {
+    if (enemy.canAttack(player.position)) {
       this.state = EnemyState.ATTACKING;
-      enemyAny.attack(player);
+      enemy.attack(player);
       return;
     }
 
     // Move towards player aggressively
-    if (enemyAny.moveTowards) {
-      enemyAny.moveTowards(player.position);
-    }
+    enemy.moveTowards(player.position);
   }
 
   private getDistance(pos1: Position, pos2: Position): number {

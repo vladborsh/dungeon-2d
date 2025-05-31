@@ -1,6 +1,8 @@
 import type { GameObject, Position, Size, PlayerStats, Item } from '../../interfaces/gameInterfaces';
 import type { Level } from '../levels/Level';
 import type { InputManager } from '../../core/InputManager';
+import type { Enemy } from './Enemy';
+import type { GameEngine } from '../../core/GameEngine';
 import { Sprite } from '../../rendering/sprites/Sprite';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
 import { Inventory } from '../systems/Inventory';
@@ -27,10 +29,15 @@ export class Player implements GameObject {
   private readonly friction: number;
   private level: Level | null;
   private inputManager: InputManager | null;
+  private readonly gameEngine: GameEngine;
   private stats: PlayerStats;
   private readonly inventory: Inventory;
 
-  public constructor(position: Position) {
+  private lastAttackTime: number;
+  private isAttacking: boolean;
+  private attackStartTime: number;
+
+  public constructor(position: Position, gameEngine: GameEngine) {
     this.position = position;
     this.size = { width: GAME_CONSTANTS.PLAYER.SIZE, height: GAME_CONSTANTS.PLAYER.SIZE };
     this.sprite = this.createPlayerSprite();
@@ -41,6 +48,10 @@ export class Player implements GameObject {
     this.friction = GAME_CONSTANTS.PLAYER.FRICTION;
     this.level = null;
     this.inputManager = null;
+    this.gameEngine = gameEngine;
+    this.lastAttackTime = 0;
+    this.isAttacking = false;
+    this.attackStartTime = 0;
     
     // Initialize player stats
     this.stats = {
@@ -154,8 +165,79 @@ export class Player implements GameObject {
     }
   }
 
+  public attack(enemies: readonly Enemy[]): void {
+    const now = Date.now();
+    if (now - this.lastAttackTime < GAME_CONSTANTS.PLAYER.ATTACK.COOLDOWN) {
+      return; // Still on cooldown
+    }
+
+    this.lastAttackTime = now;
+    this.isAttacking = true;
+    this.attackStartTime = now;
+
+    // Get enemies in range and calculate damage
+    const stats = this.getStats();
+    const hitEnemies = enemies.filter(enemy => this.isInAttackRange(enemy.position));
+    
+    // Trigger camera shake based on number of enemies hit
+    const shakeIntensity = Math.min(3 + hitEnemies.length, 8); // Base shake of 3, up to max of 8
+    this.gameEngine.getCamera().shake(shakeIntensity);
+    
+    // Process damage
+    hitEnemies.forEach(enemy => {
+      const killed = enemy.takeDamage(stats.attack);
+      if (killed) {
+        this.gainExperience(enemy.getExperienceReward());
+      }
+    });
+  }
+
+  private isInAttackRange(targetPosition: Position): boolean {
+    const centerX = this.position.x + this.size.width / 2;
+    const centerY = this.position.y + this.size.height / 2;
+    const targetCenterX = targetPosition.x + GAME_CONSTANTS.ENEMIES.GOBLIN.SIZE / 2; // Use smallest enemy size
+    const targetCenterY = targetPosition.y + GAME_CONSTANTS.ENEMIES.GOBLIN.SIZE / 2;
+
+    const dx = targetCenterX - centerX;
+    const dy = targetCenterY - centerY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    return distance <= GAME_CONSTANTS.PLAYER.ATTACK.RANGE;
+  }
+
   public render(ctx: CanvasRenderingContext2D): void {
+    // Base sprite rendering
     this.sprite.render(ctx, this.position.x, this.position.y);
+
+    // Render attack animation if attacking
+    if (this.isAttacking) {
+      const attackProgress = (Date.now() - this.attackStartTime) / GAME_CONSTANTS.PLAYER.ATTACK.ANIMATION_DURATION;
+      
+      if (attackProgress >= 1) {
+        this.isAttacking = false;
+      } else {
+        this.renderAttackAnimation(ctx, attackProgress);
+      }
+    }
+  }
+
+  private renderAttackAnimation(ctx: CanvasRenderingContext2D, progress: number): void {
+    const centerX = this.position.x + this.size.width / 2;
+    const centerY = this.position.y + this.size.height / 2;
+    const radius = GAME_CONSTANTS.PLAYER.ATTACK.RANGE * progress;
+
+    // Save context state
+    ctx.save();
+
+    // Draw attack radius
+    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - progress})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Restore context state
+    ctx.restore();
   }
 
   private checkCollision(newX: number, newY: number, level: Level): boolean {
