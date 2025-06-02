@@ -2,7 +2,7 @@ import type { Position, EnemyAI } from '../../interfaces/gameInterfaces';
 import { EnemyType } from '../../interfaces/gameInterfaces';
 import type { Level } from '../levels/Level';
 import { CellType } from '../levels/MazeCell';
-import { Goblin, Skeleton, Spider, Troll } from '../entities/EnemyTypes';
+import { Goblin, Skeleton, Spider, Troll, EliteGoblin, Wraith, DungeonBoss } from '../entities/EnemyTypes';
 import { Enemy } from '../entities/Enemy';
 import { RandomMovementAI } from './ai/RandomMovementAI';
 import { PatrolAI } from './ai/PatrolAI';
@@ -26,14 +26,26 @@ export class EnemyGenerator {
     this.level = level;
     this.gameEngine = gameEngine;
     this.spawnConfigs = [
+      // Common enemies with varied AI
       { type: EnemyType.GOBLIN, aiType: 'random', weight: 0.4 },
       { type: EnemyType.GOBLIN, aiType: 'patrol', weight: 0.3 },
-      { type: EnemyType.SKELETON, aiType: 'aggressive', weight: 0.2 },
-      { type: EnemyType.SKELETON, aiType: 'guard', weight: 0.2 },
-      { type: EnemyType.SPIDER, aiType: 'random', weight: 0.3 },
-      { type: EnemyType.SPIDER, aiType: 'patrol', weight: 0.2 },
-      { type: EnemyType.TROLL, aiType: 'guard', weight: 0.1 },
-      { type: EnemyType.TROLL, aiType: 'aggressive', weight: 0.1 },
+      { type: EnemyType.SPIDER, aiType: 'random', weight: 0.4 },
+      { type: EnemyType.SPIDER, aiType: 'patrol', weight: 0.3 },
+      
+      // Medium difficulty enemies
+      { type: EnemyType.SKELETON, aiType: 'aggressive', weight: 0.25 },
+      { type: EnemyType.SKELETON, aiType: 'guard', weight: 0.25 },
+      { type: EnemyType.ELITE_GOBLIN, aiType: 'aggressive', weight: 0.2 },
+      { type: EnemyType.ELITE_GOBLIN, aiType: 'patrol', weight: 0.2 },
+      
+      // Tough enemies
+      { type: EnemyType.TROLL, aiType: 'guard', weight: 0.15 },
+      { type: EnemyType.TROLL, aiType: 'aggressive', weight: 0.15 },
+      { type: EnemyType.WRAITH, aiType: 'aggressive', weight: 0.1 },
+      { type: EnemyType.WRAITH, aiType: 'patrol', weight: 0.1 },
+      
+      // Very rare boss encounter
+      { type: EnemyType.DUNGEON_BOSS, aiType: 'aggressive', weight: 0.05 },
     ];
   }
 
@@ -148,6 +160,12 @@ export class EnemyGenerator {
         return new Spider(position, ai, this.gameEngine);
       case EnemyType.TROLL:
         return new Troll(position, ai, this.gameEngine);
+      case EnemyType.ELITE_GOBLIN:
+        return new EliteGoblin(position, ai, this.gameEngine);
+      case EnemyType.WRAITH:
+        return new Wraith(position, ai, this.gameEngine);
+      case EnemyType.DUNGEON_BOSS:
+        return new DungeonBoss(position, ai, this.gameEngine);
       default:
         return null;
     }

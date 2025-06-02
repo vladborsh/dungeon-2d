@@ -283,3 +283,218 @@ export class Troll extends Enemy {
     return sprite;
   }
 }
+
+export class EliteGoblin extends Enemy {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
+    const stats: EnemyStats = {
+      health: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.HEALTH,
+      maxHealth: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.HEALTH,
+      damage: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.DAMAGE,
+      speed: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.SPEED,
+      detectionRadius: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.DETECTION_RADIUS,
+      attackRange: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.ATTACK_RANGE,
+      attackCooldown: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.ATTACK_COOLDOWN,
+      experienceReward: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.EXPERIENCE_REWARD,
+    };
+
+    super(position, EnemyType.ELITE_GOBLIN, stats, ai, gameEngine);
+  }
+
+  protected getEnemySize(): Size {
+    return {
+      width: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.SIZE,
+      height: GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.SIZE,
+    };
+  }
+
+  protected getEnemyColor(): string {
+    return GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.COLOR;
+  }
+
+  protected createSprite(): Sprite {
+    const sprite = new Sprite(this.size);
+    const ctx = sprite.context;
+
+    // Elite goblin sprite - golden accents
+    const pixels = [
+      '  GGGG  ',
+      ' GYGDYG ',
+      ' GDDDGD ',
+      '  GGGG  ',
+      ' BBYBBB ',
+      'BBBBBBBB',
+      ' B YY B ',
+      ' D YY D ',
+    ];
+
+    type ColorMap = {
+      'G': string;
+      'D': string;
+      'B': string;
+      'Y': string;
+      ' ': string;
+    };
+
+    const colors: ColorMap = {
+      'G': GAME_CONSTANTS.ENEMIES.ELITE_GOBLIN.COLOR,
+      'D': '#2F4F2F',
+      'B': '#654321',
+      'Y': '#FFD700', // Gold accents
+      ' ': 'transparent',
+    };
+
+    pixels.forEach((row, y) => {
+      [...row].forEach((pixel, x) => {
+        const p = pixel as keyof ColorMap;
+        if (p !== ' ') {
+          ctx.fillStyle = colors[p];
+          ctx.fillRect(x * 3, y * 3, 3, 3);
+        }
+      });
+    });
+
+    return sprite;
+  }
+}
+
+export class Wraith extends Enemy {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
+    const stats: EnemyStats = {
+      health: GAME_CONSTANTS.ENEMIES.WRAITH.HEALTH,
+      maxHealth: GAME_CONSTANTS.ENEMIES.WRAITH.HEALTH,
+      damage: GAME_CONSTANTS.ENEMIES.WRAITH.DAMAGE,
+      speed: GAME_CONSTANTS.ENEMIES.WRAITH.SPEED,
+      detectionRadius: GAME_CONSTANTS.ENEMIES.WRAITH.DETECTION_RADIUS,
+      attackRange: GAME_CONSTANTS.ENEMIES.WRAITH.ATTACK_RANGE,
+      attackCooldown: GAME_CONSTANTS.ENEMIES.WRAITH.ATTACK_COOLDOWN,
+      experienceReward: GAME_CONSTANTS.ENEMIES.WRAITH.EXPERIENCE_REWARD,
+    };
+
+    super(position, EnemyType.WRAITH, stats, ai, gameEngine);
+  }
+
+  protected getEnemySize(): Size {
+    return {
+      width: GAME_CONSTANTS.ENEMIES.WRAITH.SIZE,
+      height: GAME_CONSTANTS.ENEMIES.WRAITH.SIZE,
+    };
+  }
+
+  protected getEnemyColor(): string {
+    return GAME_CONSTANTS.ENEMIES.WRAITH.COLOR;
+  }
+
+  protected createSprite(): Sprite {
+    const sprite = new Sprite(this.size);
+    const ctx = sprite.context;
+
+    // Wraith sprite - ethereal and dark
+    const pixels = [
+      '   PP    ',
+      '  PPPP   ',
+      ' PDDDPP  ',
+      ' PDDDPP  ',
+      '  PPPP   ',
+      ' PPPPPP  ',
+      'PPPPPPPP ',
+      ' P PP P  ',
+    ];
+
+    type ColorMap = {
+      'P': string;
+      'D': string;
+      ' ': string;
+    };
+
+    const colors: ColorMap = {
+      'P': GAME_CONSTANTS.ENEMIES.WRAITH.COLOR,
+      'D': '#1a1a1a',
+      ' ': 'transparent',
+    };
+
+    pixels.forEach((row, y) => {
+      [...row].forEach((pixel, x) => {
+        const p = pixel as keyof ColorMap;
+        if (p !== ' ') {
+          ctx.fillStyle = colors[p];
+          ctx.fillRect(x * 3, y * 3, 3, 3);
+        }
+      });
+    });
+
+    return sprite;
+  }
+}
+
+export class DungeonBoss extends Enemy {
+  public constructor(position: Position, ai: EnemyAI, gameEngine: GameEngine) {
+    const stats: EnemyStats = {
+      health: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.HEALTH,
+      maxHealth: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.HEALTH,
+      damage: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.DAMAGE,
+      speed: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.SPEED,
+      detectionRadius: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.DETECTION_RADIUS,
+      attackRange: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.ATTACK_RANGE,
+      attackCooldown: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.ATTACK_COOLDOWN,
+      experienceReward: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.EXPERIENCE_REWARD,
+    };
+
+    super(position, EnemyType.DUNGEON_BOSS, stats, ai, gameEngine);
+  }
+
+  protected getEnemySize(): Size {
+    return {
+      width: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.SIZE,
+      height: GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.SIZE,
+    };
+  }
+
+  protected getEnemyColor(): string {
+    return GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.COLOR;
+  }
+
+  protected createSprite(): Sprite {
+    const sprite = new Sprite(this.size);
+    const ctx = sprite.context;
+
+    // Boss sprite - large and imposing
+    const pixels = [
+      '    RRRRRR    ',
+      '   RRRRRRRR   ',
+      '  RRDDRRDDRF  ',
+      '   RRRRRRRR   ',
+      '    RRRRRR    ',
+      '  RRRFRRFRRR  ',
+      ' RRRRRRRRRRRR ',
+      'RRRRRRRRRRRRRR',
+      ' RR RR  RR RR ',
+      ' FF FF  FF FF ',
+    ];
+
+    type ColorMap = {
+      'R': string;
+      'D': string;
+      'F': string;
+      ' ': string;
+    };
+
+    const colors: ColorMap = {
+      'R': GAME_CONSTANTS.ENEMIES.DUNGEON_BOSS.COLOR,
+      'D': '#2a0000',
+      'F': '#ff0000',
+      ' ': 'transparent',
+    };
+
+    pixels.forEach((row, y) => {
+      [...row].forEach((pixel, x) => {
+        const p = pixel as keyof ColorMap;
+        if (p !== ' ') {
+          ctx.fillStyle = colors[p];
+          ctx.fillRect(x * 4, y * 4, 4, 4);
+        }
+      });
+    });
+
+    return sprite;
+  }
+}

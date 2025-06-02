@@ -1,5 +1,5 @@
 import { GAME_CONSTANTS } from '../constants/gameConstants';
-import type { GameObject } from '../interfaces/gameInterfaces';
+import type { GameObject, Position } from '../interfaces/gameInterfaces';
 import { Player } from '../game/entities/Player';
 import { Level } from '../game/levels/Level';
 import { InputManager } from './InputManager';
@@ -216,6 +216,13 @@ export class GameEngine {
     return this.damageSystem;
   }
 
+  /**
+   * Get the current player for external access
+   */
+  public getPlayer(): Player | null {
+    return this.player;
+  }
+
   private gameLoop(): void {
     const currentTime = performance.now();
     const deltaTime = currentTime - this.lastFrameTime;
@@ -268,7 +275,10 @@ export class GameEngine {
       this.playerTrailSystem.update();
     }
     
-    // Update loot system
+    // Update loot system with current player position and drops
+    if (this.player) {
+      this.lootSystem.updatePlayerPosition(this.player.position);
+    }
     this.lootSystem.updateItemDrops();
     
     // Auto-collect nearby items
@@ -310,18 +320,32 @@ export class GameEngine {
     // Render item drops (in front of floor)
     this.lootSystem.renderItemDrops(this.ctx);
 
-    // Render enemies (in front of drops)
-    this.enemyManager.render(this.ctx);
+    // Create a list of all renderable entities for depth sorting
+    const renderableEntities: { position: Position; render: (ctx: CanvasRenderingContext2D) => void }[] = [
+      ...this.enemyManager.getEnemies().map(enemy => ({
+        position: enemy.position,
+        render: (ctx: CanvasRenderingContext2D) => {
+          if (enemy.isAlive()) {
+            enemy.render(ctx);
+          }
+        }
+      })),
+      ...Array.from(this.gameObjects).map(obj => ({
+        position: obj.position,
+        render: (ctx: CanvasRenderingContext2D) => obj.render(ctx)
+      }))
+    ];
 
-    // Render enemy attack particles above enemies
+    // Sort entities by Y position
+    renderableEntities.sort((a, b) => a.position.y - b.position.y);
+
+    // Render all entities in order
+    renderableEntities.forEach(entity => {
+      entity.render(this.ctx);
+    });
+
+    // Render particles on top of everything except walls
     this.particleSystem.renderEnemyAttackParticles(this.ctx);
-
-    // Render all game objects (player in front of everything except walls)
-    for (const object of this.gameObjects) {
-      object.render(this.ctx);
-    }
-
-    // Render player attack particles above player
     this.particleSystem.renderPlayerAttackParticles(this.ctx);
 
     // Render walls last so they appear in front of everything

@@ -10,6 +10,8 @@ export class ItemDrop implements GameObject {
   private readonly lifetime: number;
   private bobOffset: number;
   private bobDirection: number;
+  private readonly magnetSpeed: number;
+  private targetPosition: Position | null;
 
   public constructor(position: Position, item: Item, quantity: number = 1) {
     this.position = position;
@@ -23,6 +25,8 @@ export class ItemDrop implements GameObject {
     this.lifetime = GAME_CONSTANTS.ITEMS.DROP.LIFETIME;
     this.bobOffset = 0;
     this.bobDirection = 1;
+    this.magnetSpeed = GAME_CONSTANTS.ITEMS.DROP.MAGNETISM.SPEED;
+    this.targetPosition = null;
   }
 
   public getItem(): Item {
@@ -45,11 +49,37 @@ export class ItemDrop implements GameObject {
     return distance < GAME_CONSTANTS.ITEMS.DROP.COLLECTION_RADIUS;
   }
 
-  public update(): void {
+  public update(playerPosition?: Position): void {
     // Create a bobbing animation
     this.bobOffset += this.bobDirection * GAME_CONSTANTS.ITEMS.DROP.ANIMATION.BOB_SPEED;
     if (Math.abs(this.bobOffset) > GAME_CONSTANTS.ITEMS.DROP.ANIMATION.BOB_OFFSET_LIMIT) {
       this.bobDirection *= -1;
+    }
+
+    // Check if player is in magnet range and update position accordingly
+    if (playerPosition) {
+      const distance = Math.sqrt(
+        Math.pow(this.position.x - playerPosition.x, 2) +
+        Math.pow(this.position.y - playerPosition.y, 2)
+      );
+
+      if (distance < GAME_CONSTANTS.ITEMS.DROP.MAGNETISM.RANGE) {
+        this.targetPosition = playerPosition;
+      } else {
+        this.targetPosition = null;
+      }
+    }
+
+    // Move towards player if in magnet range
+    if (this.targetPosition) {
+      const dx = this.targetPosition.x - this.position.x;
+      const dy = this.targetPosition.y - this.position.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 0) {
+        this.position.x += (dx / distance) * this.magnetSpeed;
+        this.position.y += (dy / distance) * this.magnetSpeed;
+      }
     }
   }
 

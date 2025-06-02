@@ -328,12 +328,16 @@ export abstract class Enemy implements GameObject {
       const newX = this.position.x + normalizedX * this.stats.speed;
       const newY = this.position.y + normalizedY * this.stats.speed;
 
-      // Check collision separately for X and Y axes using bounding box collision
-      if (!this.checkCollision(newX, this.position.y)) {
+      // Check wall collision separately for X and Y axes using bounding box collision
+      const canMoveX = !this.checkCollision(newX, this.position.y);
+      const canMoveY = !this.checkCollision(this.position.x, newY);
+
+      // Check player collision separately for X and Y axes
+      if (canMoveX && !this.checkPlayerCollision(newX, this.position.y)) {
         this.position = { ...this.position, x: newX };
       }
 
-      if (!this.checkCollision(this.position.x, newY)) {
+      if (canMoveY && !this.checkPlayerCollision(this.position.x, newY)) {
         this.position = { ...this.position, y: newY };
       }
     }
@@ -355,7 +359,68 @@ export abstract class Enemy implements GameObject {
       { x: newX + this.size.width, y: newY + this.size.height } // Bottom-right
     ];
 
-    return corners.some(corner => this.level!.isWall(corner.x, corner.y));
+    // Check for wall collisions
+    if (corners.some(corner => this.level!.isWall(corner.x, corner.y))) {
+      return true;
+    }
+
+    // Check for player collision
+    const player = this.gameEngine.getPlayer();
+    if (!player) {
+      return false;
+    }
+
+    // Calculate bounding boxes
+    const enemyBox = {
+      left: newX,
+      right: newX + this.size.width,
+      top: newY,
+      bottom: newY + this.size.height
+    };
+
+    const playerBox = {
+      left: player.position.x,
+      right: player.position.x + player.size.width,
+      top: player.position.y,
+      bottom: player.position.y + player.size.height
+    };
+
+    // Check for intersection
+    return !(enemyBox.right < playerBox.left ||
+             enemyBox.left > playerBox.right ||
+             enemyBox.bottom < playerBox.top ||
+             enemyBox.top > playerBox.bottom);
+  }
+
+  /**
+   * Check collision with the player using bounding box detection
+   */
+  private checkPlayerCollision(newX: number, newY: number): boolean {
+    // Get player reference from game engine
+    const player = this.gameEngine.getPlayer();
+    if (!player) return false;
+
+    // Calculate enemy's bounding box
+    const enemyBox = {
+      left: newX,
+      right: newX + this.size.width,
+      top: newY,
+      bottom: newY + this.size.height
+    };
+
+    // Calculate player's bounding box
+    const playerBox = {
+      left: player.position.x,
+      right: player.position.x + player.size.width,
+      top: player.position.y,
+      bottom: player.position.y + player.size.height
+    };
+
+    // Check for intersection
+    return !(enemyBox.right < playerBox.left ||
+             enemyBox.left > playerBox.right ||
+             enemyBox.bottom < playerBox.top ||
+             enemyBox.top > playerBox.bottom);
   }
 
   public getStats(): EnemyStats {

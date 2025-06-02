@@ -35,9 +35,9 @@ export const GAME_CONSTANTS = {
     ROOM_GENERATION: {
       MIN_ROOM_SIZE: 3,
       MAX_ROOM_SIZE: 7,
-      ROOM_ATTEMPTS: 10,
-      MIN_ROOM_COUNT: 20,
-      MAX_ROOM_COUNT: 40,
+      ROOM_ATTEMPTS: 30,
+      MIN_ROOM_COUNT: 50,
+      MAX_ROOM_COUNT: 70,
     },
     SIZE_MULTIPLIER: 5, // How much bigger the maze should be compared to canvas
   },
@@ -64,6 +64,10 @@ export const GAME_CONSTANTS = {
       },
       LIFETIME: 30000, // 30 seconds in milliseconds
       COLLECTION_RADIUS: 36,
+      MAGNETISM: {
+        RANGE: 70, // Range at which items start being pulled to the player
+        SPEED: 5, // Speed at which items move towards player when in range
+      },
       ANIMATION: {
         BOB_SPEED: 0.1,
         BOB_OFFSET_LIMIT: 2,
@@ -298,6 +302,39 @@ export const GAME_CONSTANTS = {
       COLOR: '#8B4513',
       EXPERIENCE_REWARD: 25,
     },
+    ELITE_GOBLIN: {
+      SIZE: 28, // Slightly larger than regular goblin
+      HEALTH: 80,
+      DAMAGE: 25,
+      SPEED: 1.8,
+      DETECTION_RADIUS: 150,
+      ATTACK_RANGE: 35,
+      ATTACK_COOLDOWN: 900,
+      COLOR: '#A67B5B', // Darker, more distinguished color
+      EXPERIENCE_REWARD: 45,
+    },
+    WRAITH: {
+      SIZE: 30,
+      HEALTH: 90,
+      DAMAGE: 30,
+      SPEED: 2.2,
+      DETECTION_RADIUS: 200,
+      ATTACK_RANGE: 40,
+      ATTACK_COOLDOWN: 1000,
+      COLOR: '#4A4A4A', // Dark ghostly color
+      EXPERIENCE_REWARD: 55,
+    },
+    DUNGEON_BOSS: {
+      SIZE: 48, // Much larger than other enemies
+      HEALTH: 300,
+      DAMAGE: 45,
+      SPEED: 1.2,
+      DETECTION_RADIUS: 250,
+      ATTACK_RANGE: 60,
+      ATTACK_COOLDOWN: 2000,
+      COLOR: '#8B0000', // Dark red
+      EXPERIENCE_REWARD: 200,
+    },
     SKELETON: {
       SIZE: 27,
       HEALTH: 75,
@@ -338,14 +375,17 @@ export const GAME_CONSTANTS = {
         GOBLIN: '#8B4513',
         SKELETON: '#F5F5DC',
         SPIDER: '#4B0082',
-        TROLL: '#556B2F'
+        TROLL: '#556B2F',
+        ELITE_GOBLIN: '#A67B5B',
+        WRAITH: '#4A4A4A',
+        DUNGEON_BOSS: '#8B0000',
       }
     },
     SPAWN: {
-      ROOM_CHANCE: 0.7, // 70% chance for enemies in rooms
-      PATH_CHANCE: 0.2, // 20% chance for enemies on paths
-      MAX_ENEMIES_PER_ROOM: 3,
-      MAX_ENEMIES_PER_PATH_SECTION: 1,
+      ROOM_CHANCE: 0.8, // 80% chance for enemies in rooms
+      PATH_CHANCE: 0.3, // 30% chance for enemies on paths
+      MAX_ENEMIES_PER_ROOM: 4,
+      MAX_ENEMIES_PER_PATH_SECTION: 2,
       MIN_DISTANCE_FROM_START: 225, // pixels
       RESPAWN_TIME: 30000, // 30 seconds
     },

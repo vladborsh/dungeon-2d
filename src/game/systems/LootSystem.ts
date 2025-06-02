@@ -16,9 +16,11 @@ export interface LootTable {
 export class LootSystem {
   private static readonly lootTables: Map<string, LootTable> = new Map();
   private readonly itemDrops: ItemDrop[];
+  private playerPosition: Position;
 
   public constructor() {
     this.itemDrops = [];
+    this.playerPosition = { x: 0, y: 0 };
     this.initializeLootTables();
   }
 
@@ -88,9 +90,13 @@ export class LootSystem {
     this.itemDrops.push(itemDrop);
   }
 
+  public updatePlayerPosition(position: Position): void {
+    this.playerPosition = position;
+  }
+
   public updateItemDrops(): void {
-    // Update all item drops
-    this.itemDrops.forEach(drop => drop.update());
+    // Update all item drops with player position for magnetism
+    this.itemDrops.forEach(drop => drop.update(this.playerPosition));
 
     // Remove expired drops
     for (let i = this.itemDrops.length - 1; i >= 0; i--) {

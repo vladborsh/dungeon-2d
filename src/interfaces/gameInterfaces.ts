@@ -141,7 +141,10 @@ export enum EnemyType {
   GOBLIN = 'goblin',
   SKELETON = 'skeleton',
   SPIDER = 'spider',
-  TROLL = 'troll'
+  TROLL = 'troll',
+  ELITE_GOBLIN = 'elite_goblin',
+  WRAITH = 'wraith',
+  DUNGEON_BOSS = 'dungeon_boss'
 }
 
 export enum EnemyState {
