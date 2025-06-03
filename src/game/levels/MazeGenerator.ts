@@ -174,7 +174,7 @@ export class MazeGenerator {
            y === room.y - 1 || y === room.y + room.height) &&
           this.maze[y][x].type === CellType.Wall
         ) {
-          this.maze[y][x] = new Cell(x, y, CellType.RoomWall, false);
+          this.maze[y][x] = new Cell(x, y, CellType.RoomWall);
         }
       }
     }

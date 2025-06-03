@@ -14,6 +14,53 @@ export const GAME_CONSTANTS = {
     ROOM: '#222222',
     ROOM_WALL: '#444444',
   },
+  WALLS: {
+    DUNGEON: {
+      PRIMARY: '#4A4A4A',
+      SECONDARY: '#363636',
+      HIGHLIGHT: '#5A5A5A'
+    },
+    CAVE: {
+      PRIMARY: '#695A49',
+      SECONDARY: '#4E4238',
+      HIGHLIGHT: '#7A6B5A'
+    },
+    ANCIENT: {
+      PRIMARY: '#877C6C',
+      SECONDARY: '#6E655A',
+      HIGHLIGHT: '#9A8F7D'
+    },
+    TYPES: {
+      NORMAL: 'wall',
+      CRACKED: 'cracked_wall',
+      MOSSY: 'mossy_wall',
+      REINFORCED: 'reinforced_wall'
+    }
+  },
+  FLOORS: {
+    DUNGEON: {
+      PRIMARY: '#232323',
+      SECONDARY: '#1E1E1E',
+      ACCENT: '#282828'
+    },
+    CAVE: {
+      PRIMARY: '#1A1814',
+      SECONDARY: '#161412',
+      ACCENT: '#1E1C18'
+    },
+    ANCIENT: {
+      PRIMARY: '#2A2520',
+      SECONDARY: '#242018',
+      ACCENT: '#322C25'
+    },
+    TYPES: {
+      STONE: 'stone_floor',
+      DIRT: 'dirt_floor',
+      MARBLE: 'marble_floor',
+      CRACKED: 'cracked_floor',
+      WET: 'wet_floor'
+    }
+  },
   TILE_SIZE: 36, // Larger tiles for better visibility
   CAMERA: {
     SMOOTHING_FACTOR: 0.1, // How smoothly the camera follows the player (0 = instant, 1 = no movement)
@@ -39,7 +86,7 @@ export const GAME_CONSTANTS = {
       MIN_ROOM_COUNT: 50,
       MAX_ROOM_COUNT: 70,
     },
-    SIZE_MULTIPLIER: 5, // How much bigger the maze should be compared to canvas
+    SIZE_MULTIPLIER: 3, // How much bigger the maze should be compared to canvas
   },
   INVENTORY: {
     MAX_SLOTS: 30,

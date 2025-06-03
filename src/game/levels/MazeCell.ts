@@ -12,6 +12,7 @@ export interface MazeCell {
   readonly y: number;
   readonly type: CellType;
   readonly visited: boolean;
+  readonly floorType?: string;
 }
 
 export class Cell implements MazeCell {
@@ -20,6 +21,7 @@ export class Cell implements MazeCell {
     public readonly y: number,
     public readonly type: CellType = CellType.Wall,
     public readonly visited: boolean = false,
+    public readonly floorType?: string,
   ) {}
 }
 
